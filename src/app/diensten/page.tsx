@@ -28,7 +28,7 @@ function ServicesContent() {
 
     // Then apply search filter
     if (searchQuery) {
-      results = results
+      const scoredResults = results
         .map(service => {
           const name = service.name.toLowerCase();
           const description = service.description.toLowerCase();
@@ -56,9 +56,13 @@ function ServicesContent() {
         .sort((a, b) => b.score - a.score);
 
       // If no exact match, show custom service option
-      if (results.length === 0 || results[0].score < 100) {
+      if (scoredResults.length === 0 || scoredResults[0].score < 100) {
         setShowCustomService(true);
+      } else {
+        setShowCustomService(false);
       }
+      
+      results = scoredResults as any[];
     } else {
       setShowCustomService(false);
     }
