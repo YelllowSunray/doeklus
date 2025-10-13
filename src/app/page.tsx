@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { generateOrganizationSchema, generateServiceSchema } from "@/lib/seo";
+import { getPopularServices } from "@/lib/services";
 
 export default function Home() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function Home() {
   };
 
   const organizationSchema = generateOrganizationSchema();
+  const popularServices = getPopularServices();
 
   return (
     <div className="min-h-screen">
@@ -336,17 +338,6 @@ export default function Home() {
     </div>
   );
 }
-
-const popularServices = [
-  { slug: "meubelmontage", name: "Meubels", icon: "🪛", description: "IKEA & meer monteren", priceFrom: 25 },
-  { slug: "schilderen", name: "Schilderen", icon: "🎨", description: "Binnen & buiten", priceFrom: 30 },
-  { slug: "verhuizen", name: "Verhuizen", icon: "📦", description: "Sjouwen & transporteren", priceFrom: 28 },
-  { slug: "tuinonderhoud", name: "Tuin", icon: "🌱", description: "Maaien & snoeien", priceFrom: 25 },
-  { slug: "schoonmaken", name: "Schoonmaken", icon: "🧹", description: "Huis & kantoor", priceFrom: 22 },
-  { slug: "klusjesman", name: "Klussen", icon: "🔧", description: "Alles wat kapot is", priceFrom: 28 },
-  { slug: "elektrisch", name: "Elektra", icon: "💡", description: "Lampen & stopcontacten", priceFrom: 35 },
-  { slug: "loodgieter", name: "Loodgieter", icon: "🚰", description: "Lekken & kranen", priceFrom: 40 }
-];
 
 const testimonials = [
   { name: "Marieke V.", service: "Meubelmontage", text: "Binnen een uur stond mijn kast. Simpel en snel geregeld!" },

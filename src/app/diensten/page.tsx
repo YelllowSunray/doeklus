@@ -5,24 +5,35 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { generateBreadcrumbSchema, generateServiceSchema } from "@/lib/seo";
+import { services as allServices, getCategories, getServicesByCategory } from "@/lib/services";
 
 function ServicesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q")?.toLowerCase() || "";
   const postcode = searchParams.get("postcode") || "";
+  const categoryParam = searchParams.get("category") || "";
 
-  const [filteredServices, setFilteredServices] = useState(services);
+  const [filteredServices, setFilteredServices] = useState(allServices);
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [showCustomService, setShowCustomService] = useState(false);
 
   useEffect(() => {
+    let results = allServices;
+
+    // Filter by category first
+    if (selectedCategory) {
+      results = getServicesByCategory(selectedCategory);
+    }
+
+    // Then apply search filter
     if (searchQuery) {
-      // Smart search ranking
-      const results = services
+      results = results
         .map(service => {
           const name = service.name.toLowerCase();
           const description = service.description.toLowerCase();
           const keywords = service.keywords?.map(k => k.toLowerCase()) || [];
+          const category = service.category?.toLowerCase() || "";
           
           let score = 0;
           
@@ -34,6 +45,8 @@ function ServicesContent() {
           else if (name.includes(searchQuery)) score = 60;
           // Contains in description
           else if (description.includes(searchQuery)) score = 40;
+          // Category match
+          else if (category.includes(searchQuery)) score = 35;
           // Keyword match
           else if (keywords.some(k => k.includes(searchQuery))) score = 30;
           
@@ -42,17 +55,16 @@ function ServicesContent() {
         .filter(s => s.score > 0)
         .sort((a, b) => b.score - a.score);
 
-      setFilteredServices(results);
-      
       // If no exact match, show custom service option
       if (results.length === 0 || results[0].score < 100) {
         setShowCustomService(true);
       }
     } else {
-      setFilteredServices(services);
       setShowCustomService(false);
     }
-  }, [searchQuery]);
+
+    setFilteredServices(results);
+  }, [searchQuery, selectedCategory]);
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://doeklus.nl' },
@@ -85,10 +97,42 @@ function ServicesContent() {
         <main className="pt-32 pb-20 px-4">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-5xl font-black mb-4">
-              {searchQuery ? `Zoekresultaten voor "${searchQuery}"` : 'Alle diensten'}
+              {searchQuery ? `Zoekresultaten voor "${searchQuery}"` : selectedCategory || 'Alle diensten'}
             </h1>
             {postcode && (
               <p className="text-xl text-gray-600 mb-8">In postcode: {postcode}</p>
+            )}
+
+            {/* Category Filter */}
+            {!searchQuery && (
+              <div className="mb-8 flex flex-wrap gap-3">
+                <button
+                  onClick={() => setSelectedCategory("")}
+                  className={`px-4 py-2 rounded-full font-semibold transition-all ${
+                    !selectedCategory 
+                      ? 'bg-black text-white' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Alle ({allServices.length})
+                </button>
+                {getCategories().map(cat => {
+                  const count = getServicesByCategory(cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-2 rounded-full font-semibold transition-all ${
+                        selectedCategory === cat
+                          ? 'bg-black text-white' 
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {cat} ({count})
+                    </button>
+                  );
+                })}
+              </div>
             )}
 
             {showCustomService && (
@@ -124,9 +168,15 @@ function ServicesContent() {
               ))}
             </div>
 
-            {filteredServices.length === 0 && (
+            {filteredServices.length === 0 && !showCustomService && (
               <div className="text-center py-20">
                 <p className="text-2xl text-gray-500">Geen diensten gevonden</p>
+                <button
+                  onClick={() => setSelectedCategory("")}
+                  className="mt-4 text-[#ff4d00] hover:underline"
+                >
+                  Toon alle diensten
+                </button>
               </div>
             )}
           </div>
@@ -155,101 +205,4 @@ export default function ServicesPage() {
   );
 }
 
-const services = [
-  {
-    slug: "meubelmontage",
-    name: "Meubelmontage",
-    icon: "🪛",
-    description: "IKEA, kasten, bedden en meer",
-    priceFrom: 25,
-    keywords: ["ikea", "meubel", "monteren", "opbouwen", "kast", "bed"]
-  },
-  {
-    slug: "schilderen",
-    name: "Schilderen",
-    icon: "🎨",
-    description: "Binnen & buiten schilderwerk",
-    priceFrom: 30,
-    keywords: ["verf", "muur", "plafond", "schilder", "binnen", "buiten"]
-  },
-  {
-    slug: "verhuizen",
-    name: "Verhuizen",
-    icon: "📦",
-    description: "Sjouwen & transporteren",
-    priceFrom: 28,
-    keywords: ["verhuizing", "sjouwen", "tillen", "transport", "dozen"]
-  },
-  {
-    slug: "tuinonderhoud",
-    name: "Tuinonderhoud",
-    icon: "🌱",
-    description: "Maaien, snoeien en onderhoud",
-    priceFrom: 25,
-    keywords: ["tuin", "gras", "maaien", "snoeien", "heg", "gazon"]
-  },
-  {
-    slug: "schoonmaken",
-    name: "Schoonmaken",
-    icon: "🧹",
-    description: "Huis, kantoor en na verbouwing",
-    priceFrom: 22,
-    keywords: ["schoon", "poetsen", "opruimen", "kantoor", "huis", "verbouwing"]
-  },
-  {
-    slug: "klusjesman",
-    name: "Algemene Klussen",
-    icon: "🔧",
-    description: "Alles wat kapot is repareren",
-    priceFrom: 28,
-    keywords: ["repareren", "maken", "fixen", "handyman", "allround"]
-  },
-  {
-    slug: "elektrisch",
-    name: "Elektricien",
-    icon: "💡",
-    description: "Lampen, stopcontacten en meer",
-    priceFrom: 35,
-    keywords: ["elektra", "lamp", "stopcontact", "schakelaar", "verlichting"]
-  },
-  {
-    slug: "loodgieter",
-    name: "Loodgieter",
-    icon: "🚰",
-    description: "Lekken, kranen en sanitair",
-    priceFrom: 40,
-    keywords: ["lek", "kraan", "toilet", "douche", "cv", "sanitair"]
-  },
-  {
-    slug: "tuinieren",
-    name: "Tuinieren",
-    icon: "🌻",
-    description: "Aanleg en onderhoud",
-    priceFrom: 26,
-    keywords: ["aanleg", "beplanting", "borders", "planten"]
-  },
-  {
-    slug: "behangen",
-    name: "Behangen",
-    icon: "📐",
-    description: "Behang plakken en verwijderen",
-    priceFrom: 28,
-    keywords: ["behang", "plakken", "stomen", "verwijderen", "muur"]
-  },
-  {
-    slug: "kozijnen",
-    name: "Kozijnen",
-    icon: "🪟",
-    description: "Reparatie en schilderen",
-    priceFrom: 35,
-    keywords: ["raam", "deur", "kozijn", "schilderen", "repareren"]
-  },
-  {
-    slug: "slotenmaker",
-    name: "Slotenmaker",
-    icon: "🔐",
-    description: "Slot vervangen of repareren",
-    priceFrom: 45,
-    keywords: ["slot", "deur", "cilinder", "sleutel", "inbraak"]
-  }
-];
+// Services imported from centralized lib/services.ts
