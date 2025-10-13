@@ -2,6 +2,17 @@
 
 Een modern platform voor het vinden en boeken van klussers in Nederland. Gebouwd met Next.js 15, Firebase, en TypeScript.
 
+## ⚠️ BELANGRIJK: Eerste Setup
+
+**Voordat je de app kunt runnen, moet je Firebase configureren!**
+
+👉 **Zie [ENV_SETUP.md](ENV_SETUP.md) voor de complete setup guide (5 minuten)**
+
+Zonder `.env.local` bestand krijg je deze error:
+```
+auth/invalid-api-key
+```
+
 ## ✨ Features
 
 - 🔐 **Authenticatie** - Firebase Auth met email/password en Google login
@@ -22,39 +33,59 @@ Een modern platform voor het vinden en boeken van klussers in Nederland. Gebouwd
 
 ## 📦 Installatie
 
-1. Clone de repository:
+### 🚨 **Vereist: Firebase Setup**
+
+**Dit project werkt NIET zonder Firebase configuratie!**
+
+### Stap 1: Dependencies installeren
+
 ```bash
 git clone <your-repo-url>
 cd doeklus
-```
-
-2. Installeer dependencies:
-```bash
 npm install
 ```
 
-3. Maak een `.env.local` bestand aan:
-```bash
-cp .env.example .env.local
-```
+### Stap 2: Firebase Setup (VERPLICHT!)
 
-4. Vul je Firebase credentials in:
+**📖 Volg deze guide:** [ENV_SETUP.md](ENV_SETUP.md)
+
+In het kort:
+1. ✅ Maak Firebase project aan
+2. ✅ Kopieer credentials
+3. ✅ Maak `.env.local` bestand aan in root directory:
+
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyC...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=doeklus.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=doeklus
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=doeklus.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-ABC123
 ```
 
-5. Start de development server:
+4. ✅ Enable Authentication (Email + Google)
+5. ✅ Create Firestore Database
+6. ✅ Setup Security Rules
+
+### Stap 3: Run de app
+
 ```bash
 npm run dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000)
+
+### ⚠️ Troubleshooting
+
+**Error: `auth/invalid-api-key`**
+→ Je mist `.env.local` of hebt ongeldige credentials
+
+**Error: `index required`**  
+→ Klik op de link in de error - Firebase maakt automatisch de index aan
+
+**Error: `permission-denied`**
+→ Update Firestore security rules (zie ENV_SETUP.md)
 
 ## 🗂️ Project Structuur
 

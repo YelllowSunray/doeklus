@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import Header from "@/components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
 import { createDocument } from "@/lib/firebase/firestore";
 
-export default function PostTaskPage() {
+function PostTaskContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -432,6 +432,21 @@ export default function PostTaskPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PostTaskPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#ff4d00] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Laden...</p>
+        </div>
+      </div>
+    }>
+      <PostTaskContent />
+    </Suspense>
   );
 }
 
