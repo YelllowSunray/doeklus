@@ -1,0 +1,27 @@
+# robots.txt for Doeklus
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://doeklus.nl/sitemap.xml
+
+# Disallow private pages
+Disallow: /dashboard
+Disallow: /klusser-dashboard
+Disallow: /profiel
+Disallow: /mijn-klussen
+Disallow: /inloggen
+Disallow: /aanmelden
+Disallow: /word-klusser/aanmelden
+Disallow: /word-klusser/onboarding
+
+# Allow public pages
+Allow: /
+Allow: /diensten
+Allow: /word-klusser
+Allow: /over-ons
+Allow: /contact
+Allow: /help
+Allow: /privacy
+Allow: /voorwaarden
+

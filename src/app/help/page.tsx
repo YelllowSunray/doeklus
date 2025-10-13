@@ -1,256 +1,168 @@
 "use client";
 
-import Link from "next/link";
-import Header from "@/components/Header";
+import type { Metadata } from "next";
 import { useState } from "react";
+import Header from "@/components/Header";
+import { generateFAQSchema } from "@/lib/seo";
 
-export default function HelpPage() {
+export default function Help() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [openQuestions, setOpenQuestions] = useState<Set<string>>(new Set());
-  const [filteredTopics, setFilteredTopics] = useState(helpTopics);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  const toggleQuestion = (id: string) => {
-    const newOpen = new Set(openQuestions);
-    if (newOpen.has(id)) {
-      newOpen.delete(id);
-    } else {
-      newOpen.add(id);
+  const helpTopics = [
+    {
+      question: "Hoe plaats ik een klus?",
+      answer: "Log in op je account, klik op '+ Nieuwe Klus', vul de details in (type klus, beschrijving, locatie, datum en budget), en plaats de klus. Binnen enkele uren ontvang je biedingen van klussers."
+    },
+    {
+      question: "Hoe word ik klusser?",
+      answer: "Klik op 'Word Klusser' in het menu, meld je aan met je gegevens, doorloop de onboarding (vertel over je vaardigheden en ervaring), en je kunt direct beginnen met bieden op klussen."
+    },
+    {
+      question: "Wat kost het gebruik van Doeklus?",
+      answer: "Voor klanten is het plaatsen van een klus gratis. Je betaalt alleen de afgesproken prijs aan de klusser. Voor klussers rekenen we een kleine servicefee van 10% per klus."
+    },
+    {
+      question: "Hoe werkt de betaling?",
+      answer: "Na het accepteren van een bod betaal je veilig via iDEAL of creditcard. Het geld wordt pas vrijgegeven aan de klusser nadat de klus is voltooid en jij akkoord geeft."
+    },
+    {
+      question: "Zijn klussers verzekerd?",
+      answer: "Alle klussers op ons platform moeten aantonen dat ze een geldige aansprakelijkheidsverzekering hebben. Controleer altijd het profiel van de klusser voordat je een bod accepteert."
+    },
+    {
+      question: "Wat als ik niet tevreden ben?",
+      answer: "Als je niet tevreden bent, neem dan eerst contact op met de klusser om het op te lossen. Lukt dit niet? Neem contact op met onze klantenservice via het contactformulier."
+    },
+    {
+      question: "Kan ik een klus annuleren?",
+      answer: "Ja, tot 24 uur voor de afgesproken startdatum kun je een klus kosteloos annuleren. Bij annulering binnen 24 uur kunnen kosten in rekening worden gebracht."
+    },
+    {
+      question: "Hoe snel krijg ik een reactie?",
+      answer: "Gemiddeld ontvang je binnen 2-4 uur de eerste biedingen. Urgente klussen kunnen binnen 30 minuten een reactie krijgen."
+    },
+    {
+      question: "Kan ik meerdere biedingen ontvangen?",
+      answer: "Ja! Je ontvangt meerdere biedingen van verschillende klussers. Vergelijk prijzen, reviews en beschikbaarheid voordat je kiest."
+    },
+    {
+      question: "Hoe werken de reviews?",
+      answer: "Na elke voltooide klus kunnen zowel klant als klusser elkaar beoordelen. Reviews zijn openbaar en helpen anderen bij het maken van een keuze."
+    },
+    {
+      question: "Wat voor klussen kan ik plaatsen?",
+      answer: "Bijna alles! Van meubelmontage en schilderen tot verhuizen en tuinonderhoud. Als het niet in onze lijst staat, kun je een aangepaste klus plaatsen."
+    },
+    {
+      question: "Moet ik thuis zijn tijdens de klus?",
+      answer: "Dat hangt af van de klus. Bespreek dit vooraf met de klusser. Voor sommige klussen moet je aanwezig zijn, voor andere kan de klusser zelfstandig werken."
+    },
+    {
+      question: "Hoe wijzig ik mijn profiel?",
+      answer: "Ga naar 'Mijn Account' in het menu, klik op 'Profiel bewerken'. Hier kun je je gegevens, foto en voorkeuren aanpassen."
+    },
+    {
+      question: "Is mijn persoonlijke informatie veilig?",
+      answer: "Ja, we nemen privacy zeer serieus. Je gegevens worden versleuteld opgeslagen en nooit gedeeld met derden zonder jouw toestemming. Lees ons privacybeleid voor meer info."
+    },
+    {
+      question: "Kan ik een klusser terugvragen?",
+      answer: "Absoluut! Als je tevreden was, kun je de klusser een bericht sturen voor toekomstige klussen. Veel klanten bouwen een vaste relatie op met hun favoriete klussers."
     }
-    setOpenQuestions(newOpen);
-  };
+  ];
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (query.trim()) {
-      const filtered = helpTopics.map(topic => ({
-        ...topic,
-        questions: topic.questions.filter(q => 
-          q.question.toLowerCase().includes(query.toLowerCase()) ||
-          q.answer.toLowerCase().includes(query.toLowerCase())
-        )
-      })).filter(topic => topic.questions.length > 0);
-      setFilteredTopics(filtered);
-    } else {
-      setFilteredTopics(helpTopics);
-    }
-  };
+  const filteredTopics = searchQuery
+    ? helpTopics.filter(
+        topic =>
+          topic.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          topic.answer.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : helpTopics;
+
+  const faqSchema = generateFAQSchema(helpTopics);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header />
+    <>
+      {/* SEO Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-6xl font-black mb-6">Hulp nodig?</h1>
-          <p className="text-xl text-gray-600 mb-8">We helpen je graag. Snel antwoord op je vraag.</p>
-          
-          {/* Search */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <Header />
+        
+        <main className="pt-32 pb-20 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-5xl font-black mb-4">Hoe kunnen we helpen?</h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Veelgestelde vragen en antwoorden
+            </p>
+
+            {/* Search Bar */}
+            <div className="mb-12">
               <input
                 type="text"
-                placeholder="Zoek in help artikelen..."
+                placeholder="Zoek in veelgestelde vragen..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-[#ff4d00] text-lg"
+                className="w-full px-6 py-4 rounded-full border-2 border-gray-200 focus:border-[#ff4d00] focus:outline-none text-lg"
               />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#ff4d00] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#cc3d00] transition-colors">
-                Zoek
-              </button>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Quick Links */}
-      <section className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: '📱', title: 'Klant support', desc: 'Hulp bij je klus', link: '/help/klant' },
-              { icon: '🔨', title: 'Klusser support', desc: 'Vragen over werken', link: '/help/klusser' },
-              { icon: '💬', title: 'Direct contact', desc: 'Chat met ons team', link: '/contact' }
-            ].map((item, i) => (
-              <Link 
-                key={i}
-                href={item.link}
-                className="bg-white rounded-3xl p-8 card-hover border border-gray-200 text-center"
-              >
-                <div className="text-5xl mb-4">{item.icon}</div>
-                <h3 className="font-bold text-xl mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.desc}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Topics - Accordion Style */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-black mb-12 text-center">Veelgestelde Vragen</h2>
-          
-          <div className="space-y-8">
-            {filteredTopics.map((topic, i) => (
-              <div key={i}>
-                <h3 className="text-2xl font-bold mb-4">{topic.category}</h3>
-                <div className="space-y-3">
-                  {topic.questions.map((item, qi) => {
-                    const questionId = `${i}-${qi}`;
-                    const isOpen = openQuestions.has(questionId);
-                    
-                    return (
-                      <div 
-                        key={qi}
-                        className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200"
-                      >
-                        <button
-                          onClick={() => toggleQuestion(questionId)}
-                          className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-100 transition-colors"
-                        >
-                          <span className="font-medium pr-4">{item.question}</span>
-                          <span className={`text-primary text-xl transition-transform ${isOpen ? 'rotate-180' : ''}`}>
-                            ↓
-                          </span>
-                        </button>
-                        {isOpen && (
-                          <div className="px-4 pb-4">
-                            <p className="text-gray-600">{item.answer}</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+            {/* FAQ Accordion */}
+            <div className="space-y-4">
+              {filteredTopics.map((topic, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <button
+                    onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                    className="w-full px-6 py-5 text-left flex justify-between items-center gap-4"
+                  >
+                    <h3 className="font-bold text-lg">{topic.question}</h3>
+                    <span className="text-2xl flex-shrink-0">
+                      {expandedIndex === index ? "−" : "+"}
+                    </span>
+                  </button>
+                  {expandedIndex === index && (
+                    <div className="px-6 pb-5 text-gray-600 leading-relaxed">
+                      {topic.answer}
+                    </div>
+                  )}
                 </div>
+              ))}
+            </div>
+
+            {filteredTopics.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-xl text-gray-500">
+                  Geen resultaten gevonden voor "{searchQuery}"
+                </p>
+                <p className="text-gray-400 mt-2">
+                  Probeer een andere zoekterm of neem contact met ons op
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            )}
 
-      {/* Contact Options */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl font-black mb-12 text-center">Nog steeds vragen?</h2>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-3xl p-8">
-              <div className="text-4xl mb-4">💬</div>
-              <h3 className="text-2xl font-bold mb-3">Live chat</h3>
-              <p className="text-gray-600 mb-6">Chat direct met ons team. Gemiddelde reactietijd: 2 minuten.</p>
-              <button className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-6 py-3 rounded-full font-semibold transition-all">
-                Start chat
-              </button>
-            </div>
-
-            <div className="bg-white rounded-3xl p-8">
-              <div className="text-4xl mb-4">✉️</div>
-              <h3 className="text-2xl font-bold mb-3">Email ons</h3>
-              <p className="text-gray-600 mb-6">Stuur een email. We reageren binnen 24 uur.</p>
-              <Link href="mailto:help@doeklus.nl" className="inline-block border-2 border-black hover:bg-black hover:text-white px-6 py-3 rounded-full font-semibold transition-all">
-                help@doeklus.nl
-              </Link>
+            {/* Contact CTA */}
+            <div className="mt-16 bg-gradient-to-r from-[#ff4d00] to-[#ff6b35] rounded-2xl p-8 text-white text-center">
+              <h2 className="text-2xl font-bold mb-3">Nog vragen?</h2>
+              <p className="mb-6 opacity-90">
+                Ons team staat voor je klaar om te helpen
+              </p>
+              <a
+                href="/contact"
+                className="inline-block bg-white text-[#ff4d00] px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors"
+              >
+                Neem contact op
+              </a>
             </div>
           </div>
-
-          <div className="mt-8 bg-gradient-to-br from-[#ff4d00] to-[#0066ff] rounded-3xl p-8 text-white text-center">
-            <div className="text-4xl mb-4">📞</div>
-            <h3 className="text-2xl font-bold mb-3">Telefonische support</h3>
-            <p className="text-white/90 mb-4">Ma-vr 9:00-18:00 • Za 10:00-16:00</p>
-            <div className="text-3xl font-black">020 123 4567</div>
-          </div>
-        </div>
-      </section>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
-
-const helpTopics = [
-  {
-    category: 'Aan de slag',
-    questions: [
-      {
-        question: 'Hoe plaats ik een klus?',
-        answer: 'Ga naar "Klus plaatsen", beschrijf wat er moet gebeuren, kies een datum en locatie. Binnen 24 uur ontvang je biedingen van klussers.'
-      },
-      {
-        question: 'Hoe kies ik een klusser?',
-        answer: 'Bekijk de biedingen die je ontvangt. Vergelijk prijzen, beoordelingen en ervaring. Kies de klusser die het beste bij je past en accepteer het bod.'
-      },
-      {
-        question: 'Wat kost Doeklus?',
-        answer: 'Het plaatsen van een klus is gratis. Je betaalt alleen de afgesproken prijs aan de klusser. Wij rekenen een kleine servicekosten van 10% over de totaalprijs.'
-      },
-      {
-        question: 'Hoe werkt de betaling?',
-        answer: 'Betaal veilig online via de app na voltooiing van de klus. Je kunt betalen met iDEAL, creditcard of PayPal. Het geld wordt pas vrijgegeven als je tevreden bent.'
-      }
-    ]
-  },
-  {
-    category: 'Account & Beveiliging',
-    questions: [
-      {
-        question: 'Hoe maak ik een account?',
-        answer: 'Klik op "Aanmelden" en kies tussen email/wachtwoord of Google Sign-In. Vul je gegevens in en je bent direct klaar om te starten.'
-      },
-      {
-        question: 'Wachtwoord vergeten?',
-        answer: 'Klik op "Wachtwoord vergeten" op de inlogpagina. Je ontvangt een email met een link om je wachtwoord te resetten.'
-      },
-      {
-        question: 'Is mijn data veilig?',
-        answer: 'Ja, al je gegevens worden versleuteld opgeslagen. We delen nooit je persoonlijke informatie met derden zonder jouw toestemming.'
-      },
-      {
-        question: 'Hoe verwijder ik mijn account?',
-        answer: 'Ga naar Profiel → Veiligheid → Account Verwijderen. Let op: dit is permanent en kan niet ongedaan gemaakt worden.'
-      }
-    ]
-  },
-  {
-    category: 'Klussen & Prijzen',
-    questions: [
-      {
-        question: 'Hoe bereken ik de prijs?',
-        answer: 'Klussers stellen zelf hun uurtarief in (gemiddeld €25-50/uur). Je ontvangt biedingen met een totaalprijs voor de hele klus. Vergelijk en kies.'
-      },
-      {
-        question: 'Kan ik een klus annuleren?',
-        answer: 'Ja, tot 2 uur voor de afspraak kun je gratis annuleren. Annuleren binnen 2 uur kan kosten met zich meebrengen.'
-      },
-      {
-        question: 'Wat als ik niet tevreden ben?',
-        answer: 'Neem direct contact op met onze support. We zorgen voor een oplossing of volledige terugbetaling. Jouw tevredenheid is onze prioriteit.'
-      },
-      {
-        question: 'Is er garantie op klussen?',
-        answer: 'Ja, alle klussen hebben een 30-dagen garantie. Als er iets mis is, komt de klusser het gratis oplossen of krijg je je geld terug.'
-      }
-    ]
-  },
-  {
-    category: 'Voor Klussers',
-    questions: [
-      {
-        question: 'Hoe word ik klusser?',
-        answer: 'Klik op "Word Klusser", maak een account, vul je vaardigheden in en je kunt direct aan de slag. Er is geen wachttijd.'
-      },
-      {
-        question: 'Wanneer word ik uitbetaald?',
-        answer: 'Je ontvangt betaling binnen 24 uur na voltooiing van de klus, zodra de klant de klus heeft goedgekeurd.'
-      },
-      {
-        question: 'Hoe krijg ik meer klussen?',
-        answer: 'Vul je profiel compleet in, voeg een foto toe, reageer snel op klussen, en bouw goede reviews op. Hoe beter je profiel, hoe meer klussen!'
-      },
-      {
-        question: 'Wat zijn de commissiekosten?',
-        answer: 'Wij rekenen 15% commissie op elke voltooide klus. Dit dekt platformkosten, betalingsverwerking, verzekering en klantenservice.'
-      }
-    ]
-  }
-];
-

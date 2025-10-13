@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/AuthContext";
+import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,23 +14,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Doeklus - Vind een klusser voor elke klus",
-  description: "Boek betrouwbare klussers voor klusjes in huis, tuinonderhoud, verhuizingen en meer. Direct beschikbaar in jouw buurt.",
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-    viewportFit: 'cover'
-  },
-  themeColor: '#ff4d00',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Doeklus'
-  },
+export const metadata: Metadata = generateSEOMetadata({
+  title: 'Doeklus - Vind Lokale Klussers voor al je Klussen',
+  description: 'Vind betrouwbare klussers in jouw buurt. Post je klus en ontvang binnen 24 uur aanbiedingen van lokale professionals. Schilderen, monteren, verhuizen en meer.',
+  keywords: ['klusser vinden', 'lokale klusser', 'klussen Nederland', 'handyman', 'klusjesman', 'klusplatform']
+});
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -40,8 +36,13 @@ export default function RootLayout({
   return (
     <html lang="nl" data-scroll-behavior="smooth">
       <head>
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

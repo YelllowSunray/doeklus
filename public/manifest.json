@@ -1,0 +1,25 @@
+{
+  "name": "Doeklus - Vind Lokale Klussers",
+  "short_name": "Doeklus",
+  "description": "Vind betrouwbare klussers in jouw buurt. Post je klus en ontvang binnen 24 uur aanbiedingen van lokale professionals.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

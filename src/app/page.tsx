@@ -4,6 +4,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { generateOrganizationSchema, generateServiceSchema } from "@/lib/seo";
 
 export default function Home() {
   const router = useRouter();
@@ -22,8 +23,16 @@ export default function Home() {
     router.push(`/diensten?${params.toString()}`);
   };
 
+  const organizationSchema = generateOrganizationSchema();
+
   return (
     <div className="min-h-screen">
+      {/* SEO Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+
       {/* Modern Floating Header */}
       <Header />
 
