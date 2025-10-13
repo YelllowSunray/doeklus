@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 export const siteConfig = {
   name: 'Doeklus',
   description: 'Vind lokale klussers voor al je klussen. Snel, betrouwbaar en betaalbaar. Post je klus en ontvang aanbiedingen van professionals in jouw buurt.',
-  url: 'https://doeklus.nl',
-  ogImage: 'https://doeklus.nl/og-image.jpg',
+  url: 'https://www.doeklus.nl',
+  ogImage: 'https://www.doeklus.nl/og-image.jpg',
   keywords: [
     'klusser',
     'klussen',
@@ -93,8 +93,8 @@ export function generateOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Doeklus',
-    url: 'https://doeklus.nl',
-    logo: 'https://doeklus.nl/logo.png',
+    url: 'https://www.doeklus.nl',
+    logo: 'https://www.doeklus.nl/logo.png',
     description: siteConfig.description,
     address: {
       '@type': 'PostalAddress',

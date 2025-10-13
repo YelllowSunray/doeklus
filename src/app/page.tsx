@@ -48,7 +48,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block mb-6">
               <span className="bg-[#ffd900] text-black px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide">
-                ✨ 10.000+ Klussers actief
+                Net Opgestart! 2025
               </span>
             </div>
             <h1 className="text-6xl md:text-8xl font-black mb-8 leading-none">
@@ -111,9 +111,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { number: '50K+', label: 'Klussen per jaar' },
-              { number: '10K+', label: 'Klussers' },
-              { number: '4.8★', label: 'Gemiddelde score' },
+              { number: '2025', label: 'Net gelanceerd' },
+              { number: 'Nieuw', label: 'Platform' },
+              { number: '🚀', label: 'In groei' },
               { number: '24/7', label: 'Beschikbaar' }
             ].map((stat, i) => (
               <div key={i} className="text-center">

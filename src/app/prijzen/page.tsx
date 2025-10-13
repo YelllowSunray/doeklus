@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import Head from "next/head";
 
 export default function PricingPage() {
   const [selectedService, setSelectedService] = useState("meubelmontage");
   const [hours, setHours] = useState(2);
   const [urgency, setUrgency] = useState("normal");
+  
+  // SEO metadata via document title
+  if (typeof window !== 'undefined') {
+    document.title = 'Prijzen - Transparante tarieven per dienst | Doeklus';
+  }
   
   const serviceRates: Record<string, number> = {
     "meubelmontage": 25,

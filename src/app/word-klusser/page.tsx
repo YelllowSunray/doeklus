@@ -11,8 +11,8 @@ export const metadata: Metadata = generateMetadata({
 
 export default function WordKlusser() {
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://doeklus.nl' },
-    { name: 'Word Klusser', url: 'https://doeklus.nl/word-klusser' }
+    { name: 'Home', url: 'https://www.doeklus.nl' },
+    { name: 'Word Klusser', url: 'https://www.doeklus.nl/word-klusser' }
   ]);
 
   return (

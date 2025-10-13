@@ -2,117 +2,500 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Homepage -->
   <url>
-    <loc>https://doeklus.nl</loc>
+    <loc>https://www.doeklus.nl</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   
-  <!-- Services -->
+  <!-- Main Pages -->
   <url>
-    <loc>https://doeklus.nl/diensten</loc>
+    <loc>https://www.doeklus.nl/diensten</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   
-  <!-- Become Klusser -->
   <url>
-    <loc>https://doeklus.nl/word-klusser</loc>
+    <loc>https://www.doeklus.nl/word-klusser</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
-  <!-- Post Task -->
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   
-  <!-- Help -->
   <url>
-    <loc>https://doeklus.nl/help</loc>
+    <loc>https://www.doeklus.nl/prijzen</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
-  <!-- About -->
   <url>
-    <loc>https://doeklus.nl/over-ons</loc>
+    <loc>https://www.doeklus.nl/hoe-werkt-het</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/help</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/over-ons</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
-  <!-- Contact -->
   <url>
-    <loc>https://doeklus.nl/contact</loc>
+    <loc>https://www.doeklus.nl/contact</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
-  <!-- Privacy -->
   <url>
-    <loc>https://doeklus.nl/privacy</loc>
+    <loc>https://www.doeklus.nl/carriere</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/pers</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/veiligheid</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/support</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/privacy</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   
-  <!-- Terms -->
   <url>
-    <loc>https://doeklus.nl/voorwaarden</loc>
+    <loc>https://www.doeklus.nl/voorwaarden</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   
-  <!-- Individual Services -->
+  <!-- Individual Services - Montage & Installatie -->
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen?dienst=meubelmontage</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=meubelmontage</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen?dienst=schilderen</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=tv-ophangen</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen?dienst=verhuizen</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=gordijnen-ophangen</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen?dienst=tuinonderhoud</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=lampen-installeren</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen?dienst=elektrisch</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=keukenapparatuur</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://doeklus.nl/klus-plaatsen?dienst=loodgieter</loc>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=airco-installatie</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Schilderen & Afwerking -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=schilderen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=behangen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=stucwerk</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=tegelwerk</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Loodgieter & Sanitair -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=loodgieter</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=afvoer-ontstoppen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=cv-onderhoud</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Elektrisch -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=elektrisch</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=slimme-woning</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Verhuizen & Transport -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=verhuizen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=meubels-verplaatsen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=spullen-ophalen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=bezorgen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Tuin & Buitenruimte -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=tuinonderhoud</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=tuinaanleg</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=terras-aanleggen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=schutting-plaatsen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=sneeuw-ruimen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Schoonmaak -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=schoonmaken</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=dieptereiniging</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=ramen-wassen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=tapijt-reinigen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=na-verbouwing</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=goot-reinigen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Algemene Klussen -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=klusjesman</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=ophangwerk</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=deur-reparatie</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=raam-reparatie</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Beveiliging & Sloten -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=slotenmaker</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=camera-installatie</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=deurbel-installeren</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Timmerwerk -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=timmerwerk</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=vloer-leggen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=plinten-plaatsen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Opruimen & Organiseren -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=opruimen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=inboedel-verwijderen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=container-vullen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Digitaal & Tech -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=computer-hulp</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=wifi-installatie</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=thuisbioscoop</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Auto & Fiets -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=fiets-reparatie</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=auto-wassen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Overige Diensten -->
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=boodschappen</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=huisdier-verzorging</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=event-hulp</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=wachtrij-staan</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=persoonlijke-assistent</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.doeklus.nl/klus-plaatsen?dienst=fotografie</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 </urlset>
-

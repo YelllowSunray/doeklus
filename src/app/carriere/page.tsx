@@ -1,7 +1,12 @@
 import Link from "next/link";
 import Header from "@/components/Header";
+import { useEffect } from "react";
 
 export default function CareerPage() {
+  // SEO metadata via document title
+  useEffect(() => {
+    document.title = 'Carrière - Werk bij Doeklus | Doeklus';
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

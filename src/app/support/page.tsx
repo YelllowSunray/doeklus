@@ -1,9 +1,13 @@
 "use client";
 
 import Header from "@/components/Header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SupportPage() {
+  // SEO metadata via document title
+  useEffect(() => {
+    document.title = 'Support & Hulp - Veelgestelde vragen | Doeklus';
+  }, []);
   const [activeTab, setActiveTab] = useState('faq');
 
   const faqs = [

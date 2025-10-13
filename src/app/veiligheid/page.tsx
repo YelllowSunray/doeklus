@@ -1,8 +1,13 @@
 "use client";
 
 import Header from "@/components/Header";
+import { useEffect } from "react";
 
 export default function SafetyPage() {
+  // SEO metadata via document title
+  useEffect(() => {
+    document.title = 'Veiligheid & Vertrouwen - Veilig klussen via Doeklus | Doeklus';
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

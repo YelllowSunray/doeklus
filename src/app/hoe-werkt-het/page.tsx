@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function HowItWorksPage() {
+  // SEO metadata via document title
+  useEffect(() => {
+    document.title = 'Hoe werkt het? - In 3 stappen je klus geregeld | Doeklus';
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

@@ -1,8 +1,13 @@
 "use client";
 
 import Header from "@/components/Header";
+import { useEffect } from "react";
 
 export default function PressPage() {
+  // SEO metadata via document title
+  useEffect(() => {
+    document.title = 'Pers & Media - Nieuws en persberichten | Doeklus';
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

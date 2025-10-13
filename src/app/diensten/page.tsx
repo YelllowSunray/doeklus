@@ -71,8 +71,8 @@ function ServicesContent() {
   }, [searchQuery, selectedCategory]);
 
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://doeklus.nl' },
-    { name: 'Diensten', url: 'https://doeklus.nl/diensten' }
+    { name: 'Home', url: 'https://www.doeklus.nl' },
+    { name: 'Diensten', url: 'https://www.doeklus.nl/diensten' }
   ]);
 
   const servicesSchema = filteredServices.slice(0, 8).map(service => 

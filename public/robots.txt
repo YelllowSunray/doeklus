@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://doeklus.nl/sitemap.xml
+Sitemap: https://www.doeklus.nl/sitemap.xml
 
 # Disallow private pages
 Disallow: /dashboard
