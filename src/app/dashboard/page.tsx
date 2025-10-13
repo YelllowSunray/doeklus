@@ -152,6 +152,13 @@ export default function DashboardPage() {
     }, 'image/jpeg', 0.9);
   };
 
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/inloggen");
+    }
+  }, [user, loading, router]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -164,7 +171,6 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    router.push("/inloggen");
     return null;
   }
 

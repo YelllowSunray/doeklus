@@ -264,6 +264,13 @@ export default function KlusserDashboardPage() {
     loadData();
   }, [user]);
 
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/inloggen");
+    }
+  }, [user, loading, router]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -276,7 +283,6 @@ export default function KlusserDashboardPage() {
   }
 
   if (!user) {
-    router.push("/inloggen");
     return null;
   }
 
