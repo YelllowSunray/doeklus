@@ -24,11 +24,11 @@ export default function HelpPage() {
     if (query.trim()) {
       const filtered = helpTopics.map(topic => ({
         ...topic,
-        items: topic.items.filter(item => 
-          item.question.toLowerCase().includes(query.toLowerCase()) ||
-          item.answer.toLowerCase().includes(query.toLowerCase())
+        questions: topic.questions.filter(q => 
+          q.question.toLowerCase().includes(query.toLowerCase()) ||
+          q.answer.toLowerCase().includes(query.toLowerCase())
         )
-      })).filter(topic => topic.items.length > 0);
+      })).filter(topic => topic.questions.length > 0);
       setFilteredTopics(filtered);
     } else {
       setFilteredTopics(helpTopics);
@@ -87,28 +87,42 @@ export default function HelpPage() {
         </div>
       </section>
 
-      {/* Popular Topics */}
+      {/* Popular Topics - Accordion Style */}
       <section className="py-16 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-black mb-12 text-center">Populaire onderwerpen</h2>
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl font-black mb-12 text-center">Veelgestelde Vragen</h2>
           
-          <div className="grid md:grid-cols-2 gap-8">
-            {helpTopics.map((topic, i) => (
-              <div key={i} className="border-b border-gray-200 pb-8 last:border-0">
-                <h3 className="text-2xl font-bold mb-6">{topic.category}</h3>
-                <div className="space-y-4">
-                  {topic.questions.map((q, qi) => (
-                    <Link 
-                      key={qi}
-                      href={`/help/${topic.category.toLowerCase().replace(' ', '-')}/${qi}`}
-                      className="block p-4 rounded-xl hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{q}</span>
-                        <span className="text-[#ff4d00]">→</span>
+          <div className="space-y-8">
+            {filteredTopics.map((topic, i) => (
+              <div key={i}>
+                <h3 className="text-2xl font-bold mb-4">{topic.category}</h3>
+                <div className="space-y-3">
+                  {topic.questions.map((item, qi) => {
+                    const questionId = `${i}-${qi}`;
+                    const isOpen = openQuestions.has(questionId);
+                    
+                    return (
+                      <div 
+                        key={qi}
+                        className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200"
+                      >
+                        <button
+                          onClick={() => toggleQuestion(questionId)}
+                          className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-100 transition-colors"
+                        >
+                          <span className="font-medium pr-4">{item.question}</span>
+                          <span className={`text-primary text-xl transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                            ↓
+                          </span>
+                        </button>
+                        {isOpen && (
+                          <div className="px-4 pb-4">
+                            <p className="text-gray-600">{item.answer}</p>
+                          </div>
+                        )}
                       </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -157,37 +171,85 @@ const helpTopics = [
   {
     category: 'Aan de slag',
     questions: [
-      'Hoe plaats ik een klus?',
-      'Hoe kies ik een klusser?',
-      'Wat kost Doeklus?',
-      'Hoe werkt de betaling?'
+      {
+        question: 'Hoe plaats ik een klus?',
+        answer: 'Ga naar "Klus plaatsen", beschrijf wat er moet gebeuren, kies een datum en locatie. Binnen 24 uur ontvang je biedingen van klussers.'
+      },
+      {
+        question: 'Hoe kies ik een klusser?',
+        answer: 'Bekijk de biedingen die je ontvangt. Vergelijk prijzen, beoordelingen en ervaring. Kies de klusser die het beste bij je past en accepteer het bod.'
+      },
+      {
+        question: 'Wat kost Doeklus?',
+        answer: 'Het plaatsen van een klus is gratis. Je betaalt alleen de afgesproken prijs aan de klusser. Wij rekenen een kleine servicekosten van 10% over de totaalprijs.'
+      },
+      {
+        question: 'Hoe werkt de betaling?',
+        answer: 'Betaal veilig online via de app na voltooiing van de klus. Je kunt betalen met iDEAL, creditcard of PayPal. Het geld wordt pas vrijgegeven als je tevreden bent.'
+      }
     ]
   },
   {
     category: 'Account & Beveiliging',
     questions: [
-      'Hoe maak ik een account?',
-      'Wachtwoord vergeten?',
-      'Is mijn data veilig?',
-      'Hoe verwijder ik mijn account?'
+      {
+        question: 'Hoe maak ik een account?',
+        answer: 'Klik op "Aanmelden" en kies tussen email/wachtwoord of Google Sign-In. Vul je gegevens in en je bent direct klaar om te starten.'
+      },
+      {
+        question: 'Wachtwoord vergeten?',
+        answer: 'Klik op "Wachtwoord vergeten" op de inlogpagina. Je ontvangt een email met een link om je wachtwoord te resetten.'
+      },
+      {
+        question: 'Is mijn data veilig?',
+        answer: 'Ja, al je gegevens worden versleuteld opgeslagen. We delen nooit je persoonlijke informatie met derden zonder jouw toestemming.'
+      },
+      {
+        question: 'Hoe verwijder ik mijn account?',
+        answer: 'Ga naar Profiel → Veiligheid → Account Verwijderen. Let op: dit is permanent en kan niet ongedaan gemaakt worden.'
+      }
     ]
   },
   {
     category: 'Klussen & Prijzen',
     questions: [
-      'Hoe bereken ik de prijs?',
-      'Kan ik een klus annuleren?',
-      'Wat als ik niet tevreden ben?',
-      'Is er garantie op klussen?'
+      {
+        question: 'Hoe bereken ik de prijs?',
+        answer: 'Klussers stellen zelf hun uurtarief in (gemiddeld €25-50/uur). Je ontvangt biedingen met een totaalprijs voor de hele klus. Vergelijk en kies.'
+      },
+      {
+        question: 'Kan ik een klus annuleren?',
+        answer: 'Ja, tot 2 uur voor de afspraak kun je gratis annuleren. Annuleren binnen 2 uur kan kosten met zich meebrengen.'
+      },
+      {
+        question: 'Wat als ik niet tevreden ben?',
+        answer: 'Neem direct contact op met onze support. We zorgen voor een oplossing of volledige terugbetaling. Jouw tevredenheid is onze prioriteit.'
+      },
+      {
+        question: 'Is er garantie op klussen?',
+        answer: 'Ja, alle klussen hebben een 30-dagen garantie. Als er iets mis is, komt de klusser het gratis oplossen of krijg je je geld terug.'
+      }
     ]
   },
   {
     category: 'Voor Klussers',
     questions: [
-      'Hoe word ik klusser?',
-      'Wanneer word ik uitbetaald?',
-      'Hoe krijg ik meer klussen?',
-      'Wat zijn de commissiekosten?'
+      {
+        question: 'Hoe word ik klusser?',
+        answer: 'Klik op "Word Klusser", maak een account, vul je vaardigheden in en je kunt direct aan de slag. Er is geen wachttijd.'
+      },
+      {
+        question: 'Wanneer word ik uitbetaald?',
+        answer: 'Je ontvangt betaling binnen 24 uur na voltooiing van de klus, zodra de klant de klus heeft goedgekeurd.'
+      },
+      {
+        question: 'Hoe krijg ik meer klussen?',
+        answer: 'Vul je profiel compleet in, voeg een foto toe, reageer snel op klussen, en bouw goede reviews op. Hoe beter je profiel, hoe meer klussen!'
+      },
+      {
+        question: 'Wat zijn de commissiekosten?',
+        answer: 'Wij rekenen 15% commissie op elke voltooide klus. Dit dekt platformkosten, betalingsverwerking, verzekering en klantenservice.'
+      }
     ]
   }
 ];
