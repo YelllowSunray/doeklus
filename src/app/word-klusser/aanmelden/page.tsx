@@ -26,7 +26,7 @@ export default function KlusserSignupPage() {
     const checkUserRole = async () => {
       if (user && !authLoading) {
         // Check if user is already a klusser
-        const userDoc = await getDocument('users', user.uid);
+        const userDoc = await getDocument('users', user.uid) as any;
         
         if (userDoc?.role === 'klusser') {
           // Already a klusser
@@ -78,7 +78,7 @@ export default function KlusserSignupPage() {
       const userCredential = await signUp(formData.email, formData.password, formData.name);
       
       // Check if user document already exists (shouldn't for new signup, but just in case)
-      const existingDoc = await getDocument('users', userCredential.uid);
+      const existingDoc = await getDocument('users', userCredential.uid) as any;
       
       if (existingDoc) {
         // User exists, upgrade to klusser
@@ -137,7 +137,7 @@ export default function KlusserSignupPage() {
       const userCredential = await signInWithGoogle();
       
       // Check if user already exists
-      const existingDoc = await getDocument('users', userCredential.uid);
+      const existingDoc = await getDocument('users', userCredential.uid) as any;
       
       if (existingDoc) {
         // User exists, upgrade to klusser or redirect if already klusser

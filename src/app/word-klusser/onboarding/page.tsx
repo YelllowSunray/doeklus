@@ -30,7 +30,7 @@ export default function KlusserOnboardingPage() {
       
       if (user) {
         // Check if onboarding is already complete
-        const userDoc = await getDocument('users', user.uid);
+        const userDoc = await getDocument('users', user.uid) as any;
         if (userDoc?.klusserProfile?.onboardingComplete) {
           console.log("Onboarding already complete, redirecting to dashboard");
           router.push("/klusser-dashboard");
@@ -88,7 +88,7 @@ export default function KlusserOnboardingPage() {
     setLoading(true);
     try {
       // Get existing user document first
-      const existingDoc = await getDocument('users', user.uid);
+      const existingDoc = await getDocument('users', user.uid) as any;
       
       // Merge with existing klusserProfile
       const updatedProfile = {

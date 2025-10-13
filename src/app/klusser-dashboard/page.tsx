@@ -216,7 +216,7 @@ export default function KlusserDashboardPage() {
       if (!user) return;
       
       // Get user document
-      const doc = await getDocument('users', user.uid);
+      const doc = await getDocument('users', user.uid) as any;
       if (doc) {
         setUserDoc(doc);
         setKlusserStatus(doc.klusserProfile?.status || 'approved');

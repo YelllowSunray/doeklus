@@ -24,7 +24,7 @@ export default function ProfilePage() {
       if (!user) return;
       
       try {
-        const userDoc = await getDocument('users', user.uid);
+        const userDoc = await getDocument('users', user.uid) as any;
         if (userDoc) {
           setFormData({
             firstName: userDoc.displayName?.split(' ')[0] || user.displayName?.split(' ')[0] || '',

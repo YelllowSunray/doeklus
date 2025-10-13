@@ -44,7 +44,7 @@ export const createDocument = async (collectionName: string, data: any, customId
   }
 };
 
-export const getDocument = async (collectionName: string, id: string) => {
+export const getDocument = async (collectionName: string, id: string): Promise<any> => {
   try {
     const docRef = doc(db, collectionName, id);
     const docSnap = await getDoc(docRef);
@@ -109,7 +109,7 @@ export const deleteDocument = async (collectionName: string, id: string) => {
 export const queryDocuments = async (
   collectionName: string,
   constraints: QueryConstraint[] = []
-) => {
+): Promise<any[]> => {
   try {
     const q = query(collection(db, collectionName), ...constraints);
     const querySnapshot = await getDocs(q);
