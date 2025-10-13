@@ -1,44 +1,44 @@
 "use client";
 
 import Link from "next/link";
+import Header from "@/components/Header";
 import { useState } from "react";
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [openQuestions, setOpenQuestions] = useState<Set<string>>(new Set());
+  const [filteredTopics, setFilteredTopics] = useState(helpTopics);
+
+  const toggleQuestion = (id: string) => {
+    const newOpen = new Set(openQuestions);
+    if (newOpen.has(id)) {
+      newOpen.delete(id);
+    } else {
+      newOpen.add(id);
+    }
+    setOpenQuestions(newOpen);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      const filtered = helpTopics.map(topic => ({
+        ...topic,
+        items: topic.items.filter(item => 
+          item.question.toLowerCase().includes(query.toLowerCase()) ||
+          item.answer.toLowerCase().includes(query.toLowerCase())
+        )
+      })).filter(topic => topic.items.length > 0);
+      setFilteredTopics(filtered);
+    } else {
+      setFilteredTopics(helpTopics);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Modern Floating Header */}
-      <header className="fixed top-4 left-0 right-0 z-50 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-lg px-6 py-3">
-            <div className="flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold text-gradient">
-                Doeklus
-              </Link>
-              <nav className="hidden md:flex gap-8 items-center">
-                <Link href="/diensten" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Diensten
-                </Link>
-                <Link href="/prijzen" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Prijzen
-                </Link>
-                <Link href="/hoe-werkt-het" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Hoe werkt het
-                </Link>
-              </nav>
-              <div className="flex items-center gap-3">
-                <Link href="/inloggen" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Inloggen
-                </Link>
-                <Link href="/aanmelden" className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-5 py-2 rounded-full text-sm font-semibold transition-all">
-                  Start nu
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header */}
+      <Header />
 
       {/* Hero */}
       <section className="pt-32 pb-16 px-4">

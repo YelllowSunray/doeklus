@@ -1,70 +1,101 @@
+"use client";
+
 import Link from "next/link";
+import Header from "@/components/Header";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function ServicesPage() {
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [postcode, setPostcode] = useState(searchParams.get('postcode') || '');
+  const [filteredServices, setFilteredServices] = useState<any[]>([]);
+
+  // Update search when params change
+  useEffect(() => {
+    setSearchQuery(searchParams.get('q') || '');
+    setPostcode(searchParams.get('postcode') || '');
+  }, [searchParams]);
+
+  // Smart filter services based on search with relevance ranking
+  useEffect(() => {
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const allServices = serviceCategories.flatMap(cat => cat.services);
+      
+      // Score each service based on relevance
+      const scoredServices = allServices.map(service => {
+        let score = 0;
+        const name = service.name.toLowerCase();
+        const desc = service.description.toLowerCase();
+        
+        // Exact match in name (highest priority)
+        if (name === query) score += 100;
+        // Name starts with query
+        else if (name.startsWith(query)) score += 50;
+        // Name contains query
+        else if (name.includes(query)) score += 25;
+        
+        // Description contains query
+        if (desc.includes(query)) score += 10;
+        
+        // Keyword matching (split query into words)
+        const queryWords = query.split(' ').filter(w => w.length > 2);
+        queryWords.forEach(word => {
+          if (name.includes(word)) score += 5;
+          if (desc.includes(word)) score += 2;
+        });
+        
+        return { ...service, score };
+      });
+      
+      // Filter and sort by relevance
+      const filtered = scoredServices
+        .filter(s => s.score > 0)
+        .sort((a, b) => b.score - a.score);
+      
+      setFilteredServices(filtered);
+    } else {
+      setFilteredServices([]);
+    }
+  }, [searchQuery]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="text-2xl font-bold text-[#ff6b35]">
-                Doeklus
-              </Link>
-              <nav className="hidden md:flex gap-6">
-                <Link href="/diensten" className="text-[#ff6b35] font-medium border-b-2 border-[#ff6b35] pb-1">
-                  Diensten
-                </Link>
-                <Link href="/prijzen" className="text-gray-700 hover:text-[#ff6b35] font-medium">
-                  Prijzen
-                </Link>
-                <Link href="/hoe-werkt-het" className="text-gray-700 hover:text-[#ff6b35] font-medium">
-                  Hoe werkt het
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/word-doekler" className="text-gray-700 hover:text-[#ff6b35] font-medium hidden sm:block">
-                Word Doekler
-              </Link>
-              <Link href="/inloggen" className="text-gray-700 hover:text-[#ff6b35] font-medium">
-                Inloggen
-              </Link>
-              <Link href="/aanmelden" className="bg-[#ff6b35] hover:bg-[#e55a28] text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                Aanmelden
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero */}
-      <section className="bg-white py-12 border-b border-gray-200">
+      <section className="bg-white py-16 pt-24 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-4">Alle diensten</h1>
+          <h1 className="text-4xl md:text-5xl font-black mb-4">
+            {searchQuery ? `Resultaten voor "${searchQuery}"` : 'Alle diensten'}
+          </h1>
           <p className="text-xl text-gray-600 mb-6">
-            Van kleine klusjes tot grote projecten. Onze Doeklers staan voor je klaar.
+            {postcode ? `In de buurt van ${postcode}` : 'Van kleine klusjes tot grote projecten. Onze klussers staan voor je klaar.'}
           </p>
           
           {/* Search */}
           <div className="max-w-2xl">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Zoek een dienst..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff4d00] focus:border-transparent"
             />
           </div>
         </div>
       </section>
 
-      {/* Service Categories */}
+      {/* Search Results or All Categories */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {serviceCategories.map((category) => (
-            <div key={category.name} className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">{category.name}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {category.services.map((service) => (
+          {searchQuery && filteredServices.length > 0 ? (
+            <>
+              <h2 className="text-2xl font-bold mb-6">{filteredServices.length} resultaten gevonden</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                {filteredServices.map((service) => (
                   <Link
                     key={service.slug}
                     href={`/diensten/${service.slug}`}
@@ -73,14 +104,61 @@ export default function ServicesPage() {
                     <div className="text-4xl mb-3">{service.icon}</div>
                     <h3 className="font-semibold text-lg mb-2">{service.name}</h3>
                     <p className="text-sm text-gray-600 mb-3">{service.description}</p>
-                    <div className="text-sm font-medium text-[#ff6b35]">
+                    <div className="text-sm font-medium text-primary">
                       Vanaf €{service.priceFrom}/uur
                     </div>
                   </Link>
                 ))}
               </div>
+            </>
+          ) : searchQuery && filteredServices.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-6">🔍</div>
+              <h2 className="text-3xl font-bold mb-4">Geen exacte match gevonden</h2>
+              <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                We hebben geen dienst die precies overeenkomt met "{searchQuery}". 
+                Maar je kunt altijd een aangepaste klus plaatsen!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link 
+                  href={`/klus-plaatsen?dienst=${encodeURIComponent(searchQuery)}`}
+                  className="bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-primary-dark transition-colors"
+                >
+                  Plaats aangepaste klus: "{searchQuery}"
+                </Link>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="border-2 border-gray-300 text-gray-700 hover:border-primary hover:text-primary px-8 py-4 rounded-xl font-bold transition-colors"
+                >
+                  Bekijk alle diensten
+                </button>
+              </div>
             </div>
-          ))}
+          ) : (
+            <>
+              {serviceCategories.map((category) => (
+                <div key={category.name} className="mb-12">
+                  <h2 className="text-2xl font-bold mb-6">{category.name}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {category.services.map((service) => (
+                      <Link
+                        key={service.slug}
+                        href={`/diensten/${service.slug}`}
+                        className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-200"
+                      >
+                        <div className="text-4xl mb-3">{service.icon}</div>
+                        <h3 className="font-semibold text-lg mb-2">{service.name}</h3>
+                        <p className="text-sm text-gray-600 mb-3">{service.description}</p>
+                        <div className="text-sm font-medium text-primary">
+                          Vanaf €{service.priceFrom}/uur
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </section>
     </div>

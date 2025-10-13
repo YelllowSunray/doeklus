@@ -1,42 +1,31 @@
+"use client";
+
 import Link from "next/link";
+import Header from "@/components/Header";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [postcode, setPostcode] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Build search URL with query parameters
+    const params = new URLSearchParams();
+    if (searchQuery) params.append('q', searchQuery);
+    if (postcode) params.append('postcode', postcode);
+    
+    // Navigate to search results page
+    router.push(`/diensten?${params.toString()}`);
+  };
+
   return (
     <div className="min-h-screen">
       {/* Modern Floating Header */}
-      <header className="fixed top-4 left-0 right-0 z-50 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-lg px-6 py-3">
-            <div className="flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold">
-                <span className="text-gradient">Doeklus</span>
-              </Link>
-              <nav className="hidden md:flex gap-8 items-center">
-                <Link href="/diensten" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Diensten
-                </Link>
-                <Link href="/prijzen" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Prijzen
-                </Link>
-                <Link href="/hoe-werkt-het" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Hoe werkt het
-                </Link>
-                <Link href="/word-klusser" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Word Klusser
-                </Link>
-              </nav>
-              <div className="flex items-center gap-3">
-                <Link href="/inloggen" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Inloggen
-                </Link>
-                <Link href="/aanmelden" className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-5 py-2 rounded-full text-sm font-semibold transition-all hover:shadow-lg">
-                  Start nu
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Bold Hero Section */}
       <section className="pt-32 pb-20 px-4 relative overflow-hidden">
@@ -59,12 +48,14 @@ export default function Home() {
               Vind de beste klusser in jouw buurt. Binnen 24 uur aan de slag. Geen gedoe, gewoon doen.
             </p>
             
-            {/* Modern Search Bar */}
-            <div className="max-w-3xl mx-auto mb-8">
+            {/* Modern Search Bar - Now Functional */}
+            <form onSubmit={handleSearch} className="max-w-3xl mx-auto mb-8">
               <div className="bg-white rounded-2xl shadow-2xl p-3 flex flex-col md:flex-row gap-3">
                 <div className="flex-1 relative">
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Wat moet er gebeuren?"
                     className="w-full px-6 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4d00] text-lg"
                   />
@@ -72,15 +63,20 @@ export default function Home() {
                 <div className="md:w-40 relative">
                   <input
                     type="text"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
                     placeholder="Postcode"
                     className="w-full px-6 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4d00] text-lg"
                   />
                 </div>
-                <button className="gradient-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all hover:scale-105">
+                <button 
+                  type="submit"
+                  className="gradient-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all hover:scale-105"
+                >
                   Zoek →
                 </button>
               </div>
-            </div>
+            </form>
 
             {/* Quick Links */}
             <div className="flex flex-wrap justify-center gap-3 text-sm">
@@ -280,9 +276,19 @@ export default function Home() {
               <div className="text-3xl font-bold text-white mb-4">Doeklus</div>
               <p className="text-gray-400 mb-4">Direct klussen regelen. Simpel, snel, betrouwbaar.</p>
               <div className="flex gap-3">
-                {['LinkedIn', 'Instagram', 'Twitter'].map(social => (
-                  <a key={social} href="#" className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
-                    {social.charAt(0)}
+                {[
+                  { name: 'Facebook', icon: 'f', url: '#' },
+                  { name: 'Instagram', icon: '📷', url: '#' },
+                  { name: 'LinkedIn', icon: 'in', url: '#' },
+                  { name: 'Twitter', icon: '🐦', url: '#' }
+                ].map(social => (
+                  <a 
+                    key={social.name} 
+                    href={social.url} 
+                    className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors text-sm font-bold"
+                    aria-label={social.name}
+                  >
+                    {social.icon}
                   </a>
                 ))}
               </div>

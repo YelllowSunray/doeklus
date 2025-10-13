@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import Header from "@/components/Header";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/context/AuthContext";
+import { createDocument } from "@/lib/firebase/firestore";
 
 export default function PostTaskPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [showCustomService, setShowCustomService] = useState(!!searchParams.get('dienst'));
   const [formData, setFormData] = useState({
-    service: "",
+    service: searchParams.get('dienst') || "",
     description: "",
     location: "",
     postcode: "",
@@ -16,21 +25,74 @@ export default function PostTaskPage() {
     images: [] as string[]
   });
 
+  const handleServiceChange = (value: string) => {
+    if (value === 'custom') {
+      setShowCustomService(true);
+      setFormData({...formData, service: ''});
+    } else {
+      setShowCustomService(false);
+      setFormData({...formData, service: value});
+    }
+  };
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/inloggen?redirect=/klus-plaatsen');
+    }
+  }, [user, authLoading, router]);
+
+  const handleSubmitTask = async () => {
+    if (!user) return;
+    
+    setSubmitting(true);
+    try {
+      // Create task in Firestore
+      const taskId = await createDocument("tasks", {
+        userId: user.uid,
+        userName: user.displayName || user.email,
+        service: formData.service,
+        description: formData.description,
+        location: formData.location,
+        postcode: formData.postcode,
+        date: formData.date,
+        time: formData.time,
+        budget: formData.budget,
+        images: formData.images,
+        status: "open", // open, assigned, in_progress, completed, cancelled
+        bids: [],
+        createdAt: new Date().toISOString()
+      });
+
+      alert('Klus succesvol geplaatst! Klussers kunnen nu bieden.');
+      router.push('/mijn-klussen');
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert('Fout bij plaatsen van klus. Probeer opnieuw.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#ff4d00] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold text-[#ff6b35]">
-              Doeklus
-            </Link>
-            <Link href="/" className="text-gray-700 hover:text-[#ff6b35]">
-              Annuleren
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Progress Indicator */}
@@ -69,22 +131,57 @@ export default function PostTaskPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Type klus *
                 </label>
-                <select 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
-                  value={formData.service}
-                  onChange={(e) => setFormData({...formData, service: e.target.value})}
-                >
-                  <option value="">Kies een dienst</option>
-                  <option value="meubelmontage">Meubelmontage</option>
-                  <option value="schilderen">Schilderen</option>
-                  <option value="verhuizen">Verhuizen</option>
-                  <option value="tuinonderhoud">Tuinonderhoud</option>
-                  <option value="schoonmaken">Schoonmaken</option>
-                  <option value="klusjesman">Algemene klussen</option>
-                  <option value="elektrische-klussen">Elektrische klussen</option>
-                  <option value="loodgieter">Loodgieterswerk</option>
-                  <option value="anders">Anders</option>
-                </select>
+                
+                {!showCustomService ? (
+                  <div className="space-y-3">
+                    <select 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={formData.service}
+                      onChange={(e) => handleServiceChange(e.target.value)}
+                    >
+                      <option value="">Kies een dienst</option>
+                      <option value="Meubelmontage">🪑 Meubelmontage</option>
+                      <option value="Schilderen">🎨 Schilderen</option>
+                      <option value="Verhuizen">📦 Verhuizen</option>
+                      <option value="Tuinonderhoud">🌳 Tuinonderhoud</option>
+                      <option value="Schoonmaken">🧹 Schoonmaken</option>
+                      <option value="Elektrische klussen">⚡ Elektrische klussen</option>
+                      <option value="Loodgieterswerk">🚿 Loodgieterswerk</option>
+                      <option value="Klusjesman">🔨 Algemene klussen</option>
+                      <option value="Reparaties">🔧 Reparaties</option>
+                      <option value="custom">✨ Anders - Aangepaste klus</option>
+                    </select>
+                    <p className="text-xs text-gray-500">
+                      Staat je klus er niet bij? Kies "Anders - Aangepaste klus"
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={formData.service}
+                      onChange={(e) => setFormData({...formData, service: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-primary bg-primary/5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-lg font-medium"
+                      placeholder="Bijv. Badkamer renoveren, Dakgoot schoonmaken, etc."
+                      required
+                    />
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        💡 Aangepaste klus - beschrijf wat je nodig hebt
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCustomService(false);
+                          setFormData({...formData, service: ''});
+                        }}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Kies standaard dienst
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -324,9 +421,11 @@ export default function PostTaskPage() {
                 Vorige
               </button>
               <button 
-                className="bg-[#ff6b35] hover:bg-[#e55a28] text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+                onClick={handleSubmitTask}
+                disabled={submitting}
+                className="bg-[#ff6b35] hover:bg-[#e55a28] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-semibold transition-colors"
               >
-                Plaats klus
+                {submitting ? 'Klus plaatsen...' : 'Plaats klus'}
               </button>
             </div>
           </div>

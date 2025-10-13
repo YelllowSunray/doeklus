@@ -1,31 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import Header from "@/components/Header";
 
 export default function BecomeKlusserPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Modern Floating Header */}
-      <header className="fixed top-4 left-0 right-0 z-50 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-lg px-6 py-3">
-            <div className="flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold text-gradient">
-                Doeklus
-              </Link>
-              <div className="flex items-center gap-4">
-                <Link href="/inloggen" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
-                  Inloggen
-                </Link>
-                <Link href="/aanmelden" className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-5 py-2 rounded-full text-sm font-semibold transition-all">
-                  Aanmelden
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Bold Hero */}
       <section className="pt-32 pb-20 px-4 relative overflow-hidden bg-black text-white">
@@ -48,36 +29,36 @@ export default function BecomeKlusserPage() {
             <p className="text-xl text-gray-300 mb-8">
               Kies je eigen klussen, werk wanneer je wilt, verdien goed. Start vandaag nog.
             </p>
-            <div className="flex gap-4">
-              <Link href="/aanmelden" className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-8 py-4 rounded-full font-bold text-lg transition-all hover:scale-105">
-                Aanmelden →
-              </Link>
-              <a href="#hoe-werkt-het" className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">
-                Hoe werkt het
-              </a>
-            </div>
+             <div className="flex gap-4">
+               <Link href="/word-klusser/aanmelden" className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-8 py-4 rounded-full font-bold text-lg transition-all hover:scale-105">
+                 Aanmelden →
+               </Link>
+               <a href="#hoe-werkt-het" className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-full font-bold text-lg transition-all">
+                 Hoe werkt het
+               </a>
+             </div>
           </div>
         </div>
       </section>
 
-      {/* Benefits - Modern Cards */}
-      <section className="py-20 px-4">
+      {/* Benefits - Black & Yellow Cards */}
+      <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-black mb-4">Waarom klusser worden?</h2>
           </div>
           
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: '💰', title: 'Goed verdienen', desc: 'Verdien €25-€50 per uur. Jij bepaalt je tarieven.' },
               { icon: '🕐', title: 'Flexibel werken', desc: 'Werk wanneer je wilt. Kies je eigen tijden.' },
               { icon: '✓', title: 'Kies je klussen', desc: 'Alleen klussen die bij je passen.' },
               { icon: '📅', title: 'Wekelijks betaald', desc: 'Direct resultaat van je werk zien.' }
             ].map((benefit, i) => (
-              <div key={i} className="bg-white rounded-3xl p-8 card-hover border border-gray-200">
+              <div key={i} className="bg-black text-white rounded-3xl p-8 card-hover border-2 border-[#ffd900] hover:bg-[#ffd900] hover:text-black transition-all">
                 <div className="text-5xl mb-4">{benefit.icon}</div>
-                <h3 className="font-bold text-xl mb-2">{benefit.title}</h3>
-                <p className="text-gray-600">{benefit.desc}</p>
+                <h3 className="font-black text-xl mb-2">{benefit.title}</h3>
+                <p className="text-gray-300">{benefit.desc}</p>
               </div>
             ))}
           </div>
@@ -110,14 +91,14 @@ export default function BecomeKlusserPage() {
         </div>
       </section>
 
-      {/* Earnings - Visual */}
-      <section className="py-20 px-4 bg-white">
+      {/* Earnings - Black & Yellow */}
+      <section className="py-20 px-4 bg-black text-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-5xl font-black mb-4">Hoeveel kan ik verdienen?</h2>
           </div>
           
-          <div className="gradient-primary rounded-3xl p-12 text-white">
+          <div className="bg-gradient-to-r from-black to-gray-900 border-2 border-[#ffd900] rounded-3xl p-12">
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 { amount: '€1.200', hours: '10u/week', type: 'Bijverdienen' },
@@ -125,13 +106,13 @@ export default function BecomeKlusserPage() {
                 { amount: '€4.800', hours: '40u/week', type: 'Fulltime' }
               ].map((earning, i) => (
                 <div key={i} className="text-center">
-                  <div className="text-6xl font-black mb-2">{earning.amount}</div>
+                  <div className="text-6xl font-black mb-2 text-[#ffd900]">{earning.amount}</div>
                   <div className="text-xl mb-1">{earning.hours}</div>
-                  <div className="text-white/80">{earning.type}</div>
+                  <div className="text-gray-300">{earning.type}</div>
                 </div>
               ))}
             </div>
-            <p className="text-center text-white/80 text-sm mt-8">
+            <p className="text-center text-gray-400 text-sm mt-8">
               * Gebaseerd op €30/uur gemiddeld. Tarieven variëren per dienst.
             </p>
           </div>
@@ -207,9 +188,9 @@ export default function BecomeKlusserPage() {
           <p className="text-xl text-gray-300 mb-8">
             Sluit je aan bij 10.000+ klussers en start vandaag
           </p>
-          <Link href="/aanmelden" className="inline-block bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-10 py-5 rounded-full font-bold text-lg transition-all hover:scale-105">
-            Aanmelden als klusser →
-          </Link>
+           <Link href="/word-klusser/aanmelden" className="inline-block bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-10 py-5 rounded-full font-bold text-lg transition-all hover:scale-105">
+             Aanmelden als klusser →
+           </Link>
           <p className="mt-6 text-gray-400">
             ✓ Aanmelden duurt 5 minuten • ✓ Binnen 48 uur goedgekeurd
           </p>
@@ -244,4 +225,3 @@ export default function BecomeKlusserPage() {
     </div>
   );
 }
-

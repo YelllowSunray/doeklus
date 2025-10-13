@@ -129,3 +129,25 @@ html {
 .animate-slide-in {
   animation: slide-in-up 0.6s ease-out;
 }
+
+/* Mirror effect for selfie camera */
+.mirror {
+  transform: scaleX(-1);
+}
+
+/* Mobile safe area support for notched devices */
+.safe-area-top {
+  padding-top: max(env(safe-area-inset-top), 1rem);
+}
+
+.safe-area-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
