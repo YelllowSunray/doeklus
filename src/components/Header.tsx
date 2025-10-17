@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { getInitials } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { getDocument } from "@/lib/firebase/firestore";
+import NotificationDropdown from "./NotificationDropdown";
 
 export default function Header() {
   const { user, loading } = useAuth();
@@ -106,6 +107,7 @@ export default function Header() {
                     <Link href="/klus-plaatsen" className="text-sm font-medium hover:text-[#ff4d00] transition-colors">
                       + Nieuwe klus
                     </Link>
+                    <NotificationDropdown />
                     <div className="relative">
                       <button
                         onClick={() => setShowDropdown(!showDropdown)}

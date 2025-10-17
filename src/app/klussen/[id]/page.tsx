@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
 import { getDocument, setOrUpdateDocument, deleteDocument } from "@/lib/firebase/firestore";
+import { createBidNotification, createBidAcceptedNotification } from "@/lib/notifications";
 import Header from "@/components/Header";
 
 export default function TaskDetailPage() {
@@ -129,13 +130,30 @@ export default function TaskDetailPage() {
       });
 
       console.log('Bid submitted successfully:', newBid);
+
+      // Create notification for task owner (if not bidding on own task)
+      if (task.userId !== user.uid) {
+        try {
+          await createBidNotification(
+            task.userId,
+            user.displayName || user.email || 'Anonieme klusser',
+            task.service,
+            parseFloat(bidAmount),
+            task.id
+          );
+          console.log('Notification sent to task owner');
+        } catch (notificationError) {
+          console.error('Failed to send notification:', notificationError);
+          // Don't fail the bid submission if notification fails
+        }
+      }
       
       // Update local state to show the new bid immediately
       setTask({ ...task, bids: [...currentBids, newBid] });
       setBidAmount("");
       setBidMessage("");
       
-      alert('Bod succesvol uitgebracht! Je kunt het hieronder bekijken en eventueel bewerken.');
+      alert('Bod succesvol uitgebracht! De eigenaar van de klus is op de hoogte gesteld.');
     } catch (error) {
       console.error("Error submitting bid:", error);
       console.error("Error details:", {
@@ -313,6 +331,21 @@ export default function TaskDetailPage() {
       }
 
       // Update local state
+      // Create notification for the klusser whose bid was accepted
+      try {
+        await createBidAcceptedNotification(
+          bid.klusserId,
+          user.displayName || user.email || 'Klant',
+          task.service,
+          bid.amount,
+          task.id
+        );
+        console.log('Notification sent to klusser');
+      } catch (notificationError) {
+        console.error('Failed to send notification to klusser:', notificationError);
+        // Don't fail the acceptance if notification fails
+      }
+
       setTask({ 
         ...task, 
         bids: updatedBids,
@@ -327,7 +360,7 @@ export default function TaskDetailPage() {
         }
       });
 
-      alert(`Bod van ${bid.klusserName} geaccepteerd! De klusser is geïnformeerd.`);
+      alert(`Bod van ${bid.klusserName} geaccepteerd! De klusser is op de hoogte gesteld.`);
     } catch (error) {
       console.error("Error accepting bid:", error);
       alert('Fout bij accepteren van bod. Probeer opnieuw.');
