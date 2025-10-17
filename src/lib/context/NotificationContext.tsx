@@ -68,7 +68,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
 
     try {
-      const docRef = await setOrUpdateDocument('notifications', undefined, newNotification);
+      const docRef = await setOrUpdateDocument('notifications', null, newNotification);
       const notificationWithId = { ...newNotification, id: docRef.id } as Notification;
       
       setNotifications(prev => [notificationWithId, ...prev]);
