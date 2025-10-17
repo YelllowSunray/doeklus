@@ -43,7 +43,7 @@ export default function TaskDetailPage() {
 
         // Load klusser phone numbers for all bids
         if (taskData?.bids && taskData.bids.length > 0) {
-          const uniqueKlusserIds = [...new Set(taskData.bids.map((bid: any) => bid.klusserId))];
+          const uniqueKlusserIds = [...new Set(taskData.bids.map((bid: any) => bid.klusserId))] as string[];
           const phoneNumbers: {[klusserId: string]: string} = {};
           
           for (const klusserId of uniqueKlusserIds) {
