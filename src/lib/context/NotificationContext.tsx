@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { getDocument, setOrUpdateDocument, queryDocuments } from '@/lib/firebase/firestore';
+import { getDocument, createDocument, updateDocument, queryDocuments } from '@/lib/firebase/firestore';
 import { where, orderBy } from 'firebase/firestore';
 
 interface Notification {
@@ -68,8 +68,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
 
     try {
-      const docRef = await setOrUpdateDocument('notifications', null, newNotification);
-      const notificationWithId = { ...newNotification, id: docRef.id } as Notification;
+      const docId = await createDocument('notifications', newNotification);
+      const notificationWithId = { ...newNotification, id: docId } as Notification;
       
       setNotifications(prev => [notificationWithId, ...prev]);
     } catch (error) {
@@ -79,7 +79,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await setOrUpdateDocument('notifications', notificationId, { read: true });
+      await updateDocument('notifications', notificationId, { read: true });
       setNotifications(prev => 
         prev.map(notification => 
           notification.id === notificationId 
@@ -99,7 +99,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       // Update all unread notifications in Firestore
       await Promise.all(
         unreadNotifications.map(notification =>
-          setOrUpdateDocument('notifications', notification.id, { read: true })
+          updateDocument('notifications', notification.id, { read: true })
         )
       );
 

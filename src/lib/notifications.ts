@@ -1,4 +1,4 @@
-import { setOrUpdateDocument } from '@/lib/firebase/firestore';
+import { createDocument } from '@/lib/firebase/firestore';
 
 interface NotificationData {
   userId: string;
@@ -16,7 +16,7 @@ export async function createNotification(notificationData: NotificationData) {
       createdAt: new Date().toISOString()
     };
 
-    await setOrUpdateDocument('notifications', undefined, notification);
+    await createDocument('notifications', notification);
     console.log('Notification created successfully:', notification);
   } catch (error) {
     console.error('Error creating notification:', error);
