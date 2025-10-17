@@ -332,18 +332,20 @@ export default function TaskDetailPage() {
 
       // Update local state
       // Create notification for the klusser whose bid was accepted
-      try {
-        await createBidAcceptedNotification(
-          bid.klusserId,
-          user.displayName || user.email || 'Klant',
-          task.service,
-          bid.amount,
-          task.id
-        );
-        console.log('Notification sent to klusser');
-      } catch (notificationError) {
-        console.error('Failed to send notification to klusser:', notificationError);
-        // Don't fail the acceptance if notification fails
+      if (user) {
+        try {
+          await createBidAcceptedNotification(
+            bid.klusserId,
+            user.displayName || user.email || 'Klant',
+            task.service,
+            bid.amount,
+            task.id
+          );
+          console.log('Notification sent to klusser');
+        } catch (notificationError) {
+          console.error('Failed to send notification to klusser:', notificationError);
+          // Don't fail the acceptance if notification fails
+        }
       }
 
       setTask({ 
