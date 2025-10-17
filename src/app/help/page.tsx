@@ -24,7 +24,7 @@ export default function Help() {
     },
     {
       question: "Hoe werkt de betaling?",
-      answer: "Na het accepteren van een bod betaal je veilig via iDEAL of creditcard. Het geld wordt pas vrijgegeven aan de klusser nadat de klus is voltooid en jij akkoord geeft."
+      answer: "Na het accepteren van een bod betaal je contant of via Tikkie na voltooiing van de klus. Geen online betalingen - gewoon ouderwets betrouwbaar!"
     },
     {
       question: "Zijn klussers verzekerd?",

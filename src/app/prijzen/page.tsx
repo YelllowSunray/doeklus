@@ -373,7 +373,7 @@ const pricingFAQ = [
   },
   {
     question: "Wat zijn de Doeklus servicekosten?",
-    answer: "Doeklus rekent 15% servicekosten over het uurtarief van de klusser. Dit is voor het platform, verzekering, betalingsverwerking en klantenservice."
+    answer: "Doeklus rekent 15% servicekosten over het uurtarief van de klusser. Dit is voor het platform, verzekering en klantenservice. Geen extra kosten voor betalingsverwerking!"
   },
   {
     question: "Kan ik een vaste prijs afspreken?",
@@ -393,7 +393,7 @@ const pricingFAQ = [
   },
   {
     question: "Hoe betaal ik?",
-    answer: "Je betaalt veilig online via iDEAL, creditcard of PayPal. Het geld wordt pas aan de klusser uitbetaald na goedkeuring van de klus."
+    answer: "Je betaalt contant of via Tikkie na voltooiing van de klus. Geen online betalingen - gewoon ouderwets betrouwbaar!"
   },
   {
     question: "Wat als ik niet tevreden ben?",

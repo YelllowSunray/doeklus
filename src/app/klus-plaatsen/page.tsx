@@ -5,7 +5,8 @@ import Header from "@/components/Header";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
-import { createDocument } from "@/lib/firebase/firestore";
+import { createDocument, getDocument, setOrUpdateDocument } from "@/lib/firebase/firestore";
+import { services } from "@/lib/services";
 
 function PostTaskContent() {
   const router = useRouter();
@@ -14,6 +15,10 @@ function PostTaskContent() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [showCustomService, setShowCustomService] = useState(!!searchParams.get('dienst'));
+  const [userDoc, setUserDoc] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [existingTask, setExistingTask] = useState<any>(null);
+  const [loadingTask, setLoadingTask] = useState(false);
   const [formData, setFormData] = useState({
     service: searchParams.get('dienst') || "",
     description: "",
@@ -24,14 +29,54 @@ function PostTaskContent() {
     budget: "",
     images: [] as string[]
   });
+  const [recommendedPrice, setRecommendedPrice] = useState<number | null>(null);
+
+  const loadExistingTask = async (taskId: string) => {
+    setLoadingTask(true);
+    try {
+      const task = await getDocument('tasks', taskId) as any;
+      if (task) {
+        setExistingTask(task);
+        setFormData({
+          service: task.service || "",
+          description: task.description || "",
+          location: task.location || "",
+          postcode: task.postcode || "",
+          date: task.date || "",
+          time: task.time || "",
+          budget: task.budget || "",
+          images: task.images || []
+        });
+
+        // Check if it's a custom service
+        const isCustomService = !services.find(s => s.name === task.service);
+        setShowCustomService(isCustomService);
+      }
+    } catch (error) {
+      console.error("Error loading task:", error);
+      alert('Fout bij laden van klus. Probeer opnieuw.');
+    } finally {
+      setLoadingTask(false);
+    }
+  };
 
   const handleServiceChange = (value: string) => {
     if (value === 'custom') {
       setShowCustomService(true);
-      setFormData({...formData, service: ''});
+      setFormData({...formData, service: '', budget: ''});
+      setRecommendedPrice(null);
     } else {
       setShowCustomService(false);
       setFormData({...formData, service: value});
+      
+      // Find the service and set recommended price
+      const selectedService = services.find(s => s.name === value);
+      if (selectedService) {
+        setRecommendedPrice(selectedService.priceFrom);
+        setFormData(prev => ({...prev, budget: `€${selectedService.priceFrom}/uur`}));
+      } else {
+        setRecommendedPrice(null);
+      }
     }
   };
 
@@ -42,15 +87,51 @@ function PostTaskContent() {
     }
   }, [user, authLoading, router]);
 
+  // Load user document to get phone number
+  useEffect(() => {
+    const loadUserDoc = async () => {
+      if (user) {
+        try {
+          const doc = await getDocument('users', user.uid) as any;
+          setUserDoc(doc);
+        } catch (error) {
+          console.error("Error loading user doc:", error);
+        }
+      }
+    };
+    loadUserDoc();
+  }, [user]);
+
+  // Check if we're in edit mode and load existing task data
+  useEffect(() => {
+    const editTaskId = searchParams.get('edit');
+    if (editTaskId) {
+      setIsEditMode(true);
+      loadExistingTask(editTaskId);
+    }
+  }, [searchParams]);
+
+  // Set initial recommended price if service is pre-selected
+  useEffect(() => {
+    const initialService = searchParams.get('dienst');
+    if (initialService && !isEditMode) {
+      const selectedService = services.find(s => s.name === initialService);
+      if (selectedService) {
+        setRecommendedPrice(selectedService.priceFrom);
+        setFormData(prev => ({...prev, budget: `€${selectedService.priceFrom}/uur`}));
+      }
+    }
+  }, [searchParams, isEditMode]);
+
   const handleSubmitTask = async () => {
     if (!user) return;
     
     setSubmitting(true);
     try {
-      // Create task in Firestore
-      const taskId = await createDocument("tasks", {
+      const taskData = {
         userId: user.uid,
         userName: user.displayName || user.email,
+        userPhone: userDoc?.phone || '',
         service: formData.service,
         description: formData.description,
         location: formData.location,
@@ -60,26 +141,36 @@ function PostTaskContent() {
         budget: formData.budget,
         images: formData.images,
         status: "open", // open, assigned, in_progress, completed, cancelled
-        bids: [],
-        createdAt: new Date().toISOString()
-      });
+        bids: isEditMode ? existingTask.bids || [] : [], // Keep existing bids when editing
+        createdAt: isEditMode ? existingTask.createdAt : new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-      alert('Klus succesvol geplaatst! Klussers kunnen nu bieden.');
+      if (isEditMode && existingTask) {
+        // Update existing task
+        await setOrUpdateDocument("tasks", existingTask.id, taskData);
+        alert('Klus succesvol bijgewerkt!');
+      } else {
+        // Create new task
+        await createDocument("tasks", taskData);
+        alert('Klus succesvol geplaatst! Klussers kunnen nu bieden.');
+      }
+      
       router.push('/mijn-klussen');
     } catch (error) {
-      console.error("Error creating task:", error);
-      alert('Fout bij plaatsen van klus. Probeer opnieuw.');
+      console.error("Error saving task:", error);
+      alert('Fout bij opslaan van klus. Probeer opnieuw.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (authLoading) {
+  if (authLoading || loadingTask) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#ff4d00] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Laden...</p>
+          <p className="text-gray-600">{loadingTask ? 'Klus laden...' : 'Laden...'}</p>
         </div>
       </div>
     );
@@ -124,7 +215,9 @@ function PostTaskContent() {
         {/* Step 1: Task Details */}
         {step === 1 && (
           <div className="bg-white rounded-lg p-8 shadow-md">
-            <h1 className="text-3xl font-bold mb-6">Wat moet er gebeuren?</h1>
+            <h1 className="text-3xl font-bold mb-6">
+              {isEditMode ? 'Bewerk klus details' : 'Wat moet er gebeuren?'}
+            </h1>
             
             <div className="space-y-6">
               <div>
@@ -134,21 +227,17 @@ function PostTaskContent() {
                 
                 {!showCustomService ? (
                   <div className="space-y-3">
-                    <select 
+                    <select
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       value={formData.service}
                       onChange={(e) => handleServiceChange(e.target.value)}
                     >
                       <option value="">Kies een dienst</option>
-                      <option value="Meubelmontage">🪑 Meubelmontage</option>
-                      <option value="Schilderen">🎨 Schilderen</option>
-                      <option value="Verhuizen">📦 Verhuizen</option>
-                      <option value="Tuinonderhoud">🌳 Tuinonderhoud</option>
-                      <option value="Schoonmaken">🧹 Schoonmaken</option>
-                      <option value="Elektrische klussen">⚡ Elektrische klussen</option>
-                      <option value="Loodgieterswerk">🚿 Loodgieterswerk</option>
-                      <option value="Klusjesman">🔨 Algemene klussen</option>
-                      <option value="Reparaties">🔧 Reparaties</option>
+                      {services.slice(0, 10).map((service) => (
+                        <option key={service.slug} value={service.name}>
+                          {service.icon} {service.name} - €{service.priceFrom}/uur
+                        </option>
+                      ))}
                       <option value="custom">✨ Anders - Aangepaste klus</option>
                     </select>
                     <p className="text-xs text-gray-500">
@@ -215,26 +304,66 @@ function PostTaskContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Budget indicatie
                 </label>
-                <div className="grid grid-cols-3 gap-3">
-                  <button 
-                    className={`px-4 py-3 border rounded-lg font-medium transition-colors ${formData.budget === 'low' ? 'border-[#ff6b35] bg-[#ff6b35]/10 text-[#ff6b35]' : 'border-gray-300 hover:border-[#ff6b35]'}`}
-                    onClick={() => setFormData({...formData, budget: 'low'})}
-                  >
-                    € - €€
-                  </button>
-                  <button 
-                    className={`px-4 py-3 border rounded-lg font-medium transition-colors ${formData.budget === 'medium' ? 'border-[#ff6b35] bg-[#ff6b35]/10 text-[#ff6b35]' : 'border-gray-300 hover:border-[#ff6b35]'}`}
-                    onClick={() => setFormData({...formData, budget: 'medium'})}
-                  >
-                    €€ - €€€
-                  </button>
-                  <button 
-                    className={`px-4 py-3 border rounded-lg font-medium transition-colors ${formData.budget === 'high' ? 'border-[#ff6b35] bg-[#ff6b35]/10 text-[#ff6b35]' : 'border-gray-300 hover:border-[#ff6b35]'}`}
-                    onClick={() => setFormData({...formData, budget: 'high'})}
-                  >
-                    €€€+
-                  </button>
-                </div>
+                
+                {recommendedPrice ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-blue-800">Aanbevolen prijs</p>
+                          <p className="text-lg font-bold text-blue-900">€{recommendedPrice}/uur</p>
+                        </div>
+                        <span className="text-blue-600">💡</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => {
+                          const currentPrice = parseInt(formData.budget.replace(/[€\/uur]/g, '')) || recommendedPrice;
+                          const newPrice = Math.max(15, currentPrice - 5);
+                          setFormData({...formData, budget: `€${newPrice}/uur`});
+                        }}
+                        className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-bold transition-colors"
+                      >
+                        -
+                      </button>
+                      
+                      <div className="flex-1 text-center">
+                        <input
+                          type="text"
+                          value={formData.budget}
+                          onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                          placeholder="€25/uur"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Je kunt dit aanpassen</p>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          const currentPrice = parseInt(formData.budget.replace(/[€\/uur]/g, '')) || recommendedPrice;
+                          const newPrice = currentPrice + 5;
+                          setFormData({...formData, budget: `€${newPrice}/uur`});
+                        }}
+                        className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-bold transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      value={formData.budget}
+                      onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent"
+                      placeholder="Bijv. €25/uur of €150 totaal"
+                    />
+                    <p className="text-xs text-gray-500">Geef een indicatie van je budget</p>
+                  </div>
+                )}
               </div>
             </div>
 

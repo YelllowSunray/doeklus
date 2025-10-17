@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
-import { signOut, updateUserProfile } from "@/lib/firebase/auth";
+import { updateUserProfile } from "@/lib/firebase/auth";
 import { uploadFile } from "@/lib/firebase/storage";
-import { setOrUpdateDocument } from "@/lib/firebase/firestore";
-import { getInitials } from "@/lib/utils";
+import { setOrUpdateDocument, deleteDocument } from "@/lib/firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { queryDocuments } from "@/lib/firebase/firestore";
 import { where, orderBy, limit as firestoreLimit } from "firebase/firestore";
+import Header from "@/components/Header";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -21,15 +21,8 @@ export default function DashboardPage() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [recentTasks, setRecentTasks] = useState<any[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
+  const [deletingTask, setDeletingTask] = useState<string | null>(null);
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      router.push("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
 
   // Cleanup camera stream when component unmounts or camera closes
   useEffect(() => {
@@ -81,8 +74,8 @@ export default function DashboardPage() {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 640 },
+          height: { ideal: 480 }
         },
         audio: false
       });
@@ -152,6 +145,27 @@ export default function DashboardPage() {
     }, 'image/jpeg', 0.9);
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('Weet je zeker dat je deze klus wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.')) {
+      return;
+    }
+
+    setDeletingTask(taskId);
+    try {
+      await deleteDocument('tasks', taskId);
+      
+      // Remove task from local state
+      setRecentTasks(prev => prev.filter(task => task.id !== taskId));
+      
+      alert('Klus succesvol verwijderd!');
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      alert('Fout bij verwijderen van klus. Probeer opnieuw.');
+    } finally {
+      setDeletingTask(null);
+    }
+  };
+
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
@@ -176,29 +190,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="fixed top-4 left-0 right-0 z-50 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-lg px-6 py-3">
-            <div className="flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold text-gradient">
-                Doeklus
-              </Link>
-              <div className="flex items-center gap-4">
-                <Link href="/klus-plaatsen" className="bg-[#ff4d00] hover:bg-[#cc3d00] text-white px-5 py-2 rounded-full text-sm font-semibold transition-all">
-                  + Nieuwe klus
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm font-medium hover:text-[#ff4d00] transition-colors"
-                >
-                  Uitloggen
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Dashboard Content */}
       <div className="pt-32 pb-20 px-4">
@@ -284,13 +276,110 @@ export default function DashboardPage() {
           {/* Recent Activity */}
           <div className="bg-white rounded-3xl p-8 border border-gray-200">
             <h2 className="text-2xl font-black mb-6">Recente activiteit</h2>
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔨</div>
-              <p className="text-gray-600 mb-6">Je hebt nog geen klussen geplaatst</p>
-              <Link href="/klus-plaatsen" className="inline-block gradient-primary text-white px-8 py-3 rounded-full font-bold hover:shadow-lg transition-all">
-                Plaats je eerste klus
-              </Link>
-            </div>
+            
+            {loadingTasks ? (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-4 border-[#ff4d00] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600">Laden...</p>
+              </div>
+            ) : recentTasks.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔨</div>
+                <p className="text-gray-600 mb-6">Je hebt nog geen klussen geplaatst</p>
+                <Link href="/klus-plaatsen" className="inline-block gradient-primary text-white px-8 py-3 rounded-full font-bold hover:shadow-lg transition-all">
+                  Plaats je eerste klus
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentTasks.map((task) => (
+                  <div key={task.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="bg-[#ff4d00]/10 text-[#ff4d00] px-2 py-1 rounded text-xs font-bold uppercase">
+                            {task.service}
+                          </span>
+                          {task.bids && task.bids.length > 0 && (
+                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                              {task.bids.length} {task.bids.length === 1 ? 'bod' : 'biedingen'}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-bold text-lg mb-1">{task.service}</h3>
+                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">{task.description}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                          <span>📅 {(() => {
+                            const date = new Date(task.createdAt);
+                            if (isNaN(date.getTime())) {
+                              return 'Datum onbekend';
+                            }
+                            return date.toLocaleDateString('nl-NL');
+                          })()}</span>
+                          {task.budget && <span>💰 {task.budget}</span>}
+                          <span>📍 {task.postcode}</span>
+                        </div>
+                      </div>
+                      <div className="text-right ml-4">
+                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          task.status === 'open' ? 'bg-green-100 text-green-700' :
+                          task.status === 'assigned' ? 'bg-blue-100 text-blue-700' :
+                          task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                          task.status === 'completed' ? 'bg-gray-100 text-gray-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {task.status === 'open' ? 'Open' :
+                           task.status === 'assigned' ? 'Toegewezen' :
+                           task.status === 'in_progress' ? 'Bezig' :
+                           task.status === 'completed' ? 'Voltooid' : task.status}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Link 
+                        href={`/klussen/${task.id}`}
+                        className="flex-1 bg-[#ff4d00] text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#cc3d00] transition-colors text-center"
+                      >
+                        Bekijk details
+                      </Link>
+                      {task.status === 'open' && (
+                        <button
+                          onClick={() => handleDeleteTask(task.id)}
+                          disabled={deletingTask === task.id}
+                          className="bg-red-100 text-red-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          {deletingTask === task.id ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-red-700 border-t-transparent rounded-full animate-spin"></div>
+                              <span>Verwijderen...</span>
+                            </>
+                          ) : (
+                            <>
+                              🗑️
+                              <span>Verwijder</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                      <Link 
+                        href="/mijn-klussen"
+                        className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        Alle klussen
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+                
+                {recentTasks.length >= 3 && (
+                  <div className="text-center pt-4">
+                    <Link href="/mijn-klussen" className="text-[#ff4d00] hover:underline font-medium">
+                      Bekijk alle klussen →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Become Klusser CTA */}
@@ -317,7 +406,7 @@ export default function DashboardPage() {
 
       {/* Camera Modal - Mobile Optimized */}
       {showCamera && (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden">
           {/* Camera Header */}
           <div className="bg-gradient-to-r from-[#ff4d00] to-[#0066ff] p-4 md:p-6 text-white flex-shrink-0 safe-area-top">
             <div className="flex items-center justify-between">
@@ -336,7 +425,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Camera View */}
-          <div className="relative bg-black flex-1 flex items-center justify-center">
+          <div className="relative bg-black flex-1 flex items-center justify-center overflow-hidden">
             <video
               ref={videoRef}
               autoPlay
@@ -351,12 +440,12 @@ export default function DashboardPage() {
             
             {/* Guide Overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-48 h-48 md:w-64 md:h-64 border-4 border-white/50 rounded-full"></div>
+              <div className="w-64 h-64 md:w-80 md:h-80 border-4 border-white/50 rounded-full"></div>
             </div>
 
             {/* Loading indicator if stream not ready */}
             {!stream && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center bg-black">
                 <div className="text-white text-center">
                   <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                   <p className="text-lg">Camera wordt gestart...</p>
@@ -366,18 +455,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Camera Controls - Mobile Optimized */}
-          <div className="p-4 md:p-6 bg-gray-900/50 backdrop-blur-md flex-shrink-0 safe-area-bottom">
+          <div className="p-4 md:p-6 bg-black backdrop-blur-md flex-shrink-0 safe-area-bottom border-t border-gray-700">
             <div className="flex gap-3 md:gap-4 justify-center max-w-md mx-auto">
               <button
                 onClick={stopCamera}
-                className="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-2xl font-bold transition-colors text-base md:text-lg"
+                className="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-2xl font-bold transition-colors text-base md:text-lg min-h-[56px]"
               >
                 Annuleren
               </button>
               <button
                 onClick={capturePhoto}
                 disabled={uploading || !stream}
-                className="flex-1 px-6 py-4 bg-gradient-to-r from-[#ff4d00] to-[#0066ff] hover:shadow-lg active:scale-95 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base md:text-lg"
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-[#ff4d00] to-[#0066ff] hover:shadow-lg active:scale-95 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base md:text-lg min-h-[56px]"
               >
                 {uploading ? (
                   <>

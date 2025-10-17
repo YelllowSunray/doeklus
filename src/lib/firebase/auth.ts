@@ -5,9 +5,7 @@ import {
   onAuthStateChanged,
   User,
   sendPasswordResetEmail,
-  updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup
+  updateProfile
 } from 'firebase/auth';
 import { auth } from './config';
 
@@ -36,16 +34,6 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
-// Sign in with Google
-export const signInWithGoogle = async () => {
-  try {
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    return userCredential.user;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
-};
 
 // Sign out
 export const signOut = async () => {

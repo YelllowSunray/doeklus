@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { queryDocuments } from "@/lib/firebase/firestore";
+import { queryDocuments, deleteDocument } from "@/lib/firebase/firestore";
 import { where, orderBy } from "firebase/firestore";
 
 export default function MyTasksPage() {
@@ -13,6 +13,7 @@ export default function MyTasksPage() {
   const [activeTab, setActiveTab] = useState('active');
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingTask, setDeletingTask] = useState<string | null>(null);
 
   // Load user's tasks from Firestore
   useEffect(() => {
@@ -34,6 +35,32 @@ export default function MyTasksPage() {
 
     loadTasks();
   }, [user]);
+
+  const handleEditTask = (taskId: string) => {
+    // Redirect to the edit form with the task ID
+    router.push(`/klus-plaatsen?edit=${taskId}`);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('Weet je zeker dat je deze klus wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.')) {
+      return;
+    }
+
+    setDeletingTask(taskId);
+    try {
+      await deleteDocument('tasks', taskId);
+      
+      // Remove task from local state
+      setTasks(prev => prev.filter(task => task.id !== taskId));
+      
+      alert('Klus succesvol verwijderd!');
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      alert('Fout bij verwijderen van klus. Probeer opnieuw.');
+    } finally {
+      setDeletingTask(null);
+    }
+  };
 
   // Filter tasks by status
   const activeTasks = tasks.filter(t => t.status === 'open' || t.status === 'assigned' || t.status === 'in_progress');
@@ -167,9 +194,31 @@ export default function MyTasksPage() {
                       Details & Biedingen ({task.bids?.length || 0})
                     </button>
                     {task.status === 'open' && (
-                      <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                        Bewerken
-                      </button>
+                      <>
+                        <button 
+                          onClick={() => handleEditTask(task.id)}
+                          className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
+                        >
+                          Bewerken
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTask(task.id)}
+                          disabled={deletingTask === task.id}
+                          className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                          {deletingTask === task.id ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-red-700 border-t-transparent rounded-full animate-spin"></div>
+                              <span>Verwijderen...</span>
+                            </>
+                          ) : (
+                            <>
+                              🗑️
+                              <span>Verwijder</span>
+                            </>
+                          )}
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

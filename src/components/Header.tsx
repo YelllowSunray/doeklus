@@ -6,18 +6,43 @@ import { signOut } from "@/lib/firebase/auth";
 import { useRouter } from "next/navigation";
 import { getInitials } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { getDocument } from "@/lib/firebase/firestore";
 
 export default function Header() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [userDoc, setUserDoc] = useState<any>(null);
+  const [loadingUserDoc, setLoadingUserDoc] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
     setShowMobileMenu(false);
     setShowDropdown(false);
   }, [router]);
+
+  // Load user document to check if they're a klusser
+  useEffect(() => {
+    const loadUserDoc = async () => {
+      if (user) {
+        setLoadingUserDoc(true);
+        try {
+          const doc = await getDocument('users', user.uid) as any;
+          setUserDoc(doc);
+        } catch (error) {
+          console.error("Error loading user doc:", error);
+          setUserDoc(null);
+        } finally {
+          setLoadingUserDoc(false);
+        }
+      } else {
+        setUserDoc(null);
+        setLoadingUserDoc(false);
+      }
+    };
+    loadUserDoc();
+  }, [user]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -102,37 +127,89 @@ export default function Header() {
                       {showDropdown && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-2">
                           <div className="px-4 py-2 border-b border-gray-100">
-                            <p className="font-semibold text-sm">{user.displayName || "Account"}</p>
+                            <p className="font-semibold text-sm text-gray-900">{user.displayName || "Account"}</p>
                             <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                            {userDoc?.role === 'klusser' && (
+                              <span className="inline-block bg-[#ffd900] text-black px-2 py-1 rounded text-xs font-bold mt-1">
+                                👷 KLUSSER
+                              </span>
+                            )}
                           </div>
-                          <Link 
-                            href="/dashboard" 
-                            className="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            Dashboard
-                          </Link>
-                          <Link 
-                            href="/mijn-klussen" 
-                            className="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            Mijn klussen
-                          </Link>
-                          <Link 
-                            href="/profiel" 
-                            className="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            Profiel
-                          </Link>
-                          <Link 
-                            href="/word-klusser" 
-                            className="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors border-t border-gray-100"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            Word klusser
-                          </Link>
+                          
+                          {loadingUserDoc ? (
+                            // Loading state
+                            <div className="px-4 py-2 text-sm text-gray-500">
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Laden...</span>
+                              </div>
+                            </div>
+                          ) : userDoc?.role === 'klusser' ? (
+                            // Klusser menu
+                            <>
+                              <Link 
+                                href="/klusser-dashboard?tab=profile" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Mijn profiel
+                              </Link>
+                              <Link 
+                                href="/klusser-dashboard" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Klusser dashboard
+                              </Link>
+                              <Link 
+                                href="/klusser-dashboard?tab=available" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Beschikbare klussen
+                              </Link>
+                              <Link 
+                                href="/dashboard" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Customer dashboard
+                              </Link>
+                            </>
+                          ) : (
+                            // Customer menu (default)
+                            <>
+                              <Link 
+                                href="/profiel" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Profiel
+                              </Link>
+                              <Link 
+                                href="/dashboard" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Dashboard
+                              </Link>
+                              <Link 
+                                href="/mijn-klussen" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Mijn klussen
+                              </Link>
+                              <Link 
+                                href="/word-klusser" 
+                                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                                onClick={() => setShowDropdown(false)}
+                              >
+                                Word klusser
+                              </Link>
+                            </>
+                          )}
+                          
                           <button
                             onClick={handleLogout}
                             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -234,6 +311,13 @@ export default function Header() {
                   <>
                     <div className="h-px bg-gray-200 my-4"></div>
                     <Link 
+                      href="/profiel" 
+                      className="block px-4 py-3 text-base font-medium hover:bg-gray-50 rounded-xl transition-colors"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      👤 Profiel
+                    </Link>
+                    <Link 
                       href="/dashboard" 
                       className="block px-4 py-3 text-base font-medium hover:bg-gray-50 rounded-xl transition-colors"
                       onClick={() => setShowMobileMenu(false)}
@@ -253,13 +337,6 @@ export default function Header() {
                       onClick={() => setShowMobileMenu(false)}
                     >
                       📋 Mijn klussen
-                    </Link>
-                    <Link 
-                      href="/profiel" 
-                      className="block px-4 py-3 text-base font-medium hover:bg-gray-50 rounded-xl transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      👤 Profiel
                     </Link>
                     <div className="h-px bg-gray-200 my-4"></div>
                     <Link 

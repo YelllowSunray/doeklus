@@ -5,22 +5,27 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
 import { signOut } from "@/lib/firebase/auth";
 import { getInitials } from "@/lib/utils";
-import { useState, useEffect, useRef } from "react";
-import { getDocument, setOrUpdateDocument, queryDocuments } from "@/lib/firebase/firestore";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { getDocument, setOrUpdateDocument, queryDocuments, deleteDocument } from "@/lib/firebase/firestore";
 import { where, orderBy } from "firebase/firestore";
 import { updateUserProfile } from "@/lib/firebase/auth";
 import { uploadFile } from "@/lib/firebase/storage";
+import { useSearchParams } from "next/navigation";
 
-export default function KlusserDashboardPage() {
+function KlusserDashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('available');
   const [klusserStatus, setKlusserStatus] = useState<string>('approved');
   const [userDoc, setUserDoc] = useState<any>(null);
   const [availableTasks, setAvailableTasks] = useState<any[]>([]);
+  const [activeTasks, setActiveTasks] = useState<any[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [tasksError, setTasksError] = useState<string | null>(null);
   const [autoRefreshSeconds, setAutoRefreshSeconds] = useState(30);
+  const [userPhoneNumbers, setUserPhoneNumbers] = useState<{[userId: string]: string}>({});
+  const [deletingTask, setDeletingTask] = useState<string | null>(null);
   
   // Profile editing states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -52,6 +57,48 @@ export default function KlusserDashboardPage() {
     }
   };
 
+  const handleCompleteTask = async (taskId: string, taskIndex: number) => {
+    if (!confirm('Weet je zeker dat je deze klus wilt markeren als voltooid?')) {
+      return;
+    }
+
+    try {
+      // Update task status in Firestore
+      await setOrUpdateDocument('tasks', taskId, {
+        status: 'completed',
+        completedAt: new Date().toISOString()
+      });
+
+      // Remove from active tasks and add to completed tasks
+      const updatedActiveTasks = activeTasks.filter((_, index) => index !== taskIndex);
+      setActiveTasks(updatedActiveTasks);
+
+      // Update user profile
+      if (user) {
+        const updatedUserDoc = {
+          ...userDoc,
+          klusserProfile: {
+            ...userDoc.klusserProfile,
+            activeTasks: updatedActiveTasks,
+            completedTasks: (userDoc.klusserProfile?.completedTasks || 0) + 1,
+            totalEarnings: (userDoc.klusserProfile?.totalEarnings || 0) + (activeTasks[taskIndex]?.amount || 0)
+          }
+        };
+        
+        await setOrUpdateDocument('users', user.uid, {
+          klusserProfile: updatedUserDoc.klusserProfile
+        });
+
+        setUserDoc(updatedUserDoc);
+      }
+
+      alert('Klus succesvol gemarkeerd als voltooid!');
+    } catch (error) {
+      console.error("Error completing task:", error);
+      alert('Fout bij voltooien van klus. Probeer opnieuw.');
+    }
+  };
+
   // Camera functions (same as dashboard)
   useEffect(() => {
     return () => {
@@ -72,7 +119,7 @@ export default function KlusserDashboardPage() {
     try {
       setShowCamera(true);
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false
       });
       console.log("Camera stream obtained:", mediaStream.getVideoTracks()[0].label);
@@ -211,6 +258,14 @@ export default function KlusserDashboardPage() {
   ];
 
   // Get user document and load available tasks
+  // Handle URL parameters for tab navigation
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['available', 'profile', 'active', 'completed'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
@@ -220,6 +275,10 @@ export default function KlusserDashboardPage() {
       if (doc) {
         setUserDoc(doc);
         setKlusserStatus(doc.klusserProfile?.status || 'approved');
+        
+        // Load active tasks from user profile
+        const userActiveTasks = doc.klusserProfile?.activeTasks || [];
+        setActiveTasks(userActiveTasks);
         
         // Load profile data for editing
         setProfileData({
@@ -242,6 +301,23 @@ export default function KlusserDashboardPage() {
         ]);
         console.log("Loaded tasks:", tasks.length);
         setAvailableTasks(tasks);
+
+        // Fetch phone numbers for all unique users who posted tasks
+        const uniqueUserIds = [...new Set(tasks.map(task => task.userId))];
+        const phoneNumbers: {[userId: string]: string} = {};
+        
+        for (const userId of uniqueUserIds) {
+          try {
+            const userDoc = await getDocument('users', userId) as any;
+            if (userDoc?.phone) {
+              phoneNumbers[userId] = userDoc.phone;
+            }
+          } catch (error) {
+            console.error(`Error fetching user ${userId}:`, error);
+          }
+        }
+        
+        setUserPhoneNumbers(phoneNumbers);
       } catch (error: any) {
         console.error("Error loading tasks:", error);
         
@@ -294,15 +370,49 @@ export default function KlusserDashboardPage() {
     reviews: userDoc?.klusserProfile?.reviewCount || 0
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    if (!confirm('Weet je zeker dat je deze klus wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+      return;
+    }
+
+    setDeletingTask(taskId);
+    try {
+      await deleteDocument('tasks', taskId);
+      // Remove from local state
+      setAvailableTasks(prev => prev.filter(task => task.id !== taskId));
+      alert('Klus succesvol verwijderd!');
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      alert('Fout bij verwijderen van klus. Probeer opnieuw.');
+    } finally {
+      setDeletingTask(null);
+    }
+  };
+
   // Format time ago
   const getTimeAgo = (dateString: string) => {
+    if (!dateString) return 'Onbekend';
+    
     const date = new Date(dateString);
     const now = new Date();
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Onbekend';
+    }
+    
     const diffMs = now.getTime() - date.getTime();
+    
+    // Check if date is in the future (shouldn't happen but just in case)
+    if (diffMs < 0) {
+      return 'Net geplaatst';
+    }
+    
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
     
+    if (diffMins < 1) return 'Net geplaatst';
     if (diffMins < 60) return `${diffMins} min geleden`;
     if (diffHours < 24) return `${diffHours} uur geleden`;
     return `${diffDays} dag${diffDays > 1 ? 'en' : ''} geleden`;
@@ -321,9 +431,6 @@ export default function KlusserDashboardPage() {
               <div className="flex items-center gap-4">
                 <Link href="/klusser-dashboard" className="text-sm font-medium text-[#ffd900]">
                   Dashboard
-                </Link>
-                <Link href="/profiel" className="text-sm font-medium text-white/80 hover:text-white transition-colors">
-                  Profiel
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -413,7 +520,7 @@ export default function KlusserDashboardPage() {
                 {[
                   { id: 'available', label: 'Beschikbare Klussen', count: availableTasks.length },
                   { id: 'profile', label: 'Mijn Profiel', icon: '👤' },
-                  { id: 'active', label: 'Actieve Klussen', count: 0 },
+                  { id: 'active', label: 'Actieve Klussen', count: activeTasks.length },
                   { id: 'completed', label: 'Voltooid', count: stats.completed }
                 ].map(tab => (
                   <button
@@ -509,19 +616,37 @@ export default function KlusserDashboardPage() {
                       </p>
                     </div>
                   ) : (
-                    availableTasks.map(task => (
-                      <div key={task.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:border-[#ffd900]/50 transition-colors">
+                    availableTasks.map(task => {
+                      const isOwnKlus = task.userId === user.uid;
+                      return (
+                      <div key={task.id} className={`bg-white/10 backdrop-blur-xl border rounded-2xl p-6 transition-colors ${
+                        isOwnKlus 
+                          ? 'border-blue-500/50 bg-blue-500/10' 
+                          : 'border-white/20 hover:border-[#ffd900]/50'
+                      }`}>
                         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="bg-[#ffd900] text-black px-2 py-1 rounded text-xs font-bold uppercase">
                                 {task.service}
                               </span>
+                              {isOwnKlus && (
+                                <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                  👤 Jouw klus
+                                </span>
+                              )}
                               <span className="text-xs text-gray-400">
                                 🕐 {getTimeAgo(task.createdAt)}
                               </span>
                             </div>
-                            <h3 className="text-xl font-bold mb-2">{task.service}</h3>
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-xl font-bold">{task.service}</h3>
+                              {isOwnKlus && (
+                                <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                  ⭐ Jouw klus
+                                </div>
+                              )}
+                            </div>
                             <p className="text-gray-400 mb-3">{task.description}</p>
                             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
                               <span>📍 {task.location}, {task.postcode}</span>
@@ -529,6 +654,13 @@ export default function KlusserDashboardPage() {
                               {task.time && <span>🕐 {task.time}</span>}
                               <span>👤 {task.userName}</span>
                             </div>
+                            {(task.userPhone || task.phone || userPhoneNumbers[task.userId]) && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                                  📞 {task.userPhone || task.phone || userPhoneNumbers[task.userId]}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             {task.budget && (
@@ -543,24 +675,102 @@ export default function KlusserDashboardPage() {
                         <div className="flex gap-3">
                           <button 
                             onClick={() => router.push(`/klussen/${task.id}`)}
-                            className="flex-1 bg-[#ffd900] text-black py-3 rounded-lg font-bold hover:bg-yellow-400 transition-colors"
+                            className={`flex-1 py-3 rounded-lg font-bold transition-colors ${
+                              isOwnKlus 
+                                ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                : 'bg-[#ffd900] text-black hover:bg-yellow-400'
+                            }`}
                           >
-                            Bekijk & Bied
+                            {isOwnKlus ? 'Bekijk Jouw Klus' : 'Bekijk & Bied'}
                           </button>
+                          {isOwnKlus && (
+                            <>
+                              <button
+                                onClick={() => router.push(`/klus-plaatsen?edit=${task.id}`)}
+                                className="px-4 py-3 bg-green-500 text-white rounded-lg font-bold hover:bg-green-600 transition-colors"
+                              >
+                                ✏️ Bewerken
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTask(task.id)}
+                                disabled={deletingTask === task.id}
+                                className="px-4 py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors disabled:opacity-50"
+                              >
+                                {deletingTask === task.id ? '⏳' : '🗑️'} Verwijderen
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}
 
               {activeTab === 'active' && (
-                <div className="text-center py-20">
-                  <div className="text-6xl mb-4">🔨</div>
-                  <h3 className="text-2xl font-bold mb-4">Geen actieve klussen</h3>
-                  <p className="text-gray-400 mb-8">
-                    Je hebt momenteel geen actieve klussen. Accepteer een nieuwe klus om te beginnen!
-                  </p>
+                <div className="space-y-6">
+                  {activeTasks.length === 0 ? (
+                    <div className="text-center py-20">
+                      <div className="text-6xl mb-4">🔨</div>
+                      <h3 className="text-2xl font-bold mb-4">Geen actieve klussen</h3>
+                      <p className="text-gray-400 mb-8">
+                        Je hebt momenteel geen actieve klussen. Accepteer een nieuwe klus om te beginnen!
+                      </p>
+                    </div>
+                  ) : (
+                    activeTasks.map((task, index) => (
+                      <div key={index} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:border-[#ffd900]/50 transition-colors">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold uppercase">
+                                Actief
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                🕐 {(() => {
+                                  const date = new Date(task.acceptedAt);
+                                  return date.toLocaleDateString('nl-NL', { 
+                                    day: 'numeric', 
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  });
+                                })()}
+                              </span>
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">{task.taskTitle}</h3>
+                            <p className="text-gray-400 mb-3">Voor klant: {task.customerName}</p>
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                              <span>💰 €{task.amount}</span>
+                              <span>📋 Status: {task.status}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="bg-blue-500/20 px-4 py-2 rounded-lg">
+                              <div className="text-sm text-gray-400">Prijs</div>
+                              <div className="text-xl font-bold text-blue-400">€{task.amount}</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                          <button 
+                            onClick={() => router.push(`/klussen/${task.taskId}`)}
+                            className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition-colors"
+                          >
+                            Bekijk Details
+                          </button>
+                          <button 
+                            onClick={() => handleCompleteTask(task.taskId, index)}
+                            className="bg-green-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-green-600 transition-colors"
+                          >
+                            ✅ Voltooid
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
 
@@ -825,7 +1035,7 @@ export default function KlusserDashboardPage() {
 
       {/* Camera Modal - Same as customer dashboard */}
       {showCamera && (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden">
           <div className="bg-gradient-to-r from-[#ff4d00] to-[#0066ff] p-4 md:p-6 text-white flex-shrink-0 safe-area-top">
             <div className="flex items-center justify-between">
               <div>
@@ -902,6 +1112,21 @@ export default function KlusserDashboardPage() {
 
       <canvas ref={canvasRef} className="hidden" />
     </div>
+  );
+}
+
+export default function KlusserDashboardPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#ffd900] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#ffd900] text-lg">Laden...</p>
+        </div>
+      </div>
+    }>
+      <KlusserDashboardPage />
+    </Suspense>
   );
 }
 

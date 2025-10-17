@@ -2,9 +2,10 @@
 
 import Header from "@/components/Header";
 import { useAuth } from "@/lib/context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { setOrUpdateDocument, getDocument } from "@/lib/firebase/firestore";
 import { updateUserProfile } from "@/lib/firebase/auth";
+import { uploadFile } from "@/lib/firebase/storage";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -17,6 +18,13 @@ export default function ProfilePage() {
     phone: '',
     address: ''
   });
+
+  // Camera states
+  const [showCamera, setShowCamera] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Load user data from Firestore
   useEffect(() => {
@@ -51,6 +59,23 @@ export default function ProfilePage() {
     loadUserData();
   }, [user]);
 
+  // Cleanup camera stream when component unmounts or camera closes
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
+  // Set video source when stream changes
+  useEffect(() => {
+    if (showCamera && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(err => console.error("Play error:", err));
+    }
+  }, [showCamera, stream]);
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -79,6 +104,87 @@ export default function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const startCamera = async () => {
+    try {
+      // First show the modal
+      setShowCamera(true);
+      
+      // Then request camera access
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: false
+      });
+      
+      console.log("Camera stream obtained:", mediaStream.getVideoTracks()[0].label);
+      setStream(mediaStream);
+      
+    } catch (error) {
+      console.error("Camera error:", error);
+      setShowCamera(false);
+      alert('Camera toegang geweigerd. Controleer je browser instellingen.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = async () => {
+    if (!videoRef.current || !canvasRef.current || !user) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convert canvas to blob
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      
+      setUploading(true);
+      stopCamera();
+      
+      try {
+        // Create a File object from the blob
+        const file = new File([blob], `profile-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        
+        // Upload to Firebase Storage
+        const photoURL = await uploadFile(file, `users/${user.uid}/profile.jpg`);
+        
+        // Update Firebase Auth profile
+        await updateUserProfile({ photoURL });
+        
+        // Update Firestore document
+        await setOrUpdateDocument("users", user.uid, { photoURL });
+        
+        alert('Profielfoto succesvol bijgewerkt!');
+        window.location.reload();
+        
+      } catch (error) {
+        console.error("Error uploading photo:", error);
+        alert('Fout bij uploaden van foto. Probeer opnieuw.');
+      } finally {
+        setUploading(false);
+      }
+    }, 'image/jpeg', 0.8);
   };
 
   if (!user) {
@@ -246,16 +352,20 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-bold mb-6">Profielfoto</h2>
                 
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl text-gray-400">
+                  <div className="w-32 h-32 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl text-gray-400 overflow-hidden">
                     {user.photoURL ? (
                       <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      '📷'
+                      <span className="text-6xl">📷</span>
                     )}
                   </div>
                   
-                  <button className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors mb-4">
-                    Foto Wijzigen
+                  <button 
+                    onClick={startCamera}
+                    disabled={uploading}
+                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploading ? 'Uploaden...' : 'Foto Wijzigen'}
                   </button>
                   
                   <p className="text-sm text-gray-600">
@@ -413,6 +523,91 @@ export default function ProfilePage() {
           </div>
         </section>
       )}
+
+      {/* Camera Modal - Mobile Optimized */}
+      {showCamera && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden">
+          {/* Camera Header */}
+          <div className="bg-gradient-to-r from-[#ff4d00] to-[#0066ff] p-4 md:p-6 text-white flex-shrink-0 safe-area-top">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl md:text-2xl font-black">📸 Neem een selfie</h3>
+                <p className="text-white/80 text-sm md:text-base mt-1">Zorg dat je gezicht goed zichtbaar is</p>
+              </div>
+              <button
+                onClick={stopCamera}
+                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 active:bg-white/40 rounded-full flex items-center justify-center transition-colors flex-shrink-0"
+                aria-label="Sluiten"
+              >
+                <span className="text-xl">✕</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Camera View */}
+          <div className="relative bg-black flex-1 flex items-center justify-center overflow-hidden">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover mirror"
+              onLoadedMetadata={(e) => {
+                const video = e.currentTarget;
+                video.play().catch(err => console.error("Play error:", err));
+              }}
+            />
+            
+            {/* Guide Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-64 h-64 md:w-80 md:h-80 border-4 border-white/50 rounded-full"></div>
+            </div>
+
+            {/* Loading indicator if stream not ready */}
+            {!stream && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black">
+                <div className="text-white text-center">
+                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-lg">Camera wordt gestart...</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Camera Controls - Mobile Optimized */}
+          <div className="p-4 md:p-6 bg-black backdrop-blur-md flex-shrink-0 safe-area-bottom border-t border-gray-700">
+            <div className="flex gap-3 md:gap-4 justify-center max-w-md mx-auto">
+              <button
+                onClick={stopCamera}
+                className="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-2xl font-bold transition-colors text-base md:text-lg min-h-[56px]"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={capturePhoto}
+                disabled={uploading || !stream}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-[#ff4d00] to-[#0066ff] hover:shadow-lg active:scale-95 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base md:text-lg min-h-[56px]"
+              >
+                {uploading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="hidden sm:inline">Uploaden...</span>
+                    <span className="sm:hidden">...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl">📷</span>
+                    <span>Maak foto</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden canvas for photo capture */}
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }

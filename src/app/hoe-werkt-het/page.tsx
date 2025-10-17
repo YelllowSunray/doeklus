@@ -238,7 +238,7 @@ const howItWorksFAQ = [
   },
   {
     question: "Hoe werkt de betaling?",
-    answer: "Je betaalt online vooraf. Het geld staat in depot bij Doeklus tot je de klus goedkeurt. Dan wordt het aan de klusser uitbetaald."
+    answer: "Je betaalt contant of via Tikkie na voltooiing van de klus. Geen vooruitbetaling nodig - je betaalt pas als je tevreden bent!"
   },
   {
     question: "Kan ik een klus annuleren?",

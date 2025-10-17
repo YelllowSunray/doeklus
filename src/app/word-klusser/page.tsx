@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import Header from "@/components/Header";
-import { generateMetadata, generateBreadcrumbSchema } from "@/lib/seo";
+import { generateBreadcrumbSchema } from "@/lib/seo";
 
-export const metadata: Metadata = generateMetadata({
-  title: 'Word Klusser - Verdien bij met Klussen',
-  description: 'Meld je aan als klusser en verdien geld met je vaardigheden. Flexibel werken, zelf je prijzen bepalen en klussen in jouw buurt. Start vandaag nog!',
-  keywords: ['klusser worden', 'bijverdienen', 'klussen verdienen', 'zelfstandig klusser', 'flexibel werk']
-});
 
 export default function WordKlusser() {
   const breadcrumbSchema = generateBreadcrumbSchema([
@@ -96,7 +92,7 @@ export default function WordKlusser() {
                 {
                   icon: "🛡️",
                   title: "Veilig Betaald",
-                  description: "Geld staat klaar voordat je begint. Direct uitbetaald na klus."
+                  description: "Betaald contant of via Tikkie na voltooiing. Geen online betalingen nodig."
                 },
                 {
                   icon: "⭐",

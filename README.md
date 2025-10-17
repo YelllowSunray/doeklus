@@ -200,16 +200,13 @@ storage/
 
 ### Auth
 ```typescript
-import { signUp, signIn, signOut, signInWithGoogle } from '@/lib/firebase/auth';
+import { signUp, signIn, signOut } from '@/lib/firebase/auth';
 
 // Email/Password signup
 await signUp('email@example.com', 'password', 'Naam');
 
 // Email/Password login
 await signIn('email@example.com', 'password');
-
-// Google login
-await signInWithGoogle();
 
 // Logout
 await signOut();
